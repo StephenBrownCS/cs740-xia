@@ -22,12 +22,12 @@
 
 #define VERSION "v1.0"
 #define TITLE "XIA Chunk File Client"
-#define NAME "www_s.chunkcopy.aaa.xia"
+#define SERVER_NAME "www_s.video.com.xia"
 
 #define NUM_CHUNKS	10
 
 // global configuration options
-int verbose = 1;
+int VERBOSE = 1;
 
 char *ad;
 char *hid;
@@ -37,7 +37,7 @@ char *hid;
 */
 void say(const char *fmt, ...)
 {
-	if (verbose) {
+	if (VERBOSE) {
 		va_list args;
 
 		va_start(args, fmt);
@@ -175,29 +175,28 @@ int main(int argc, char **argv)
 	int offset;
 	char *dag;
 	char *p;
-	const char *fin;
-	const char *fout;
+	const char *srcFile;
+	const char *destFile;
 	char cmd[512];
 	char reply[512];
 	int status = 0;
 
 	say ("\n%s (%s): started\n", TITLE, VERSION);
 
-	if (argc != 3)
-		die(-1, "usage: cftp <source file> <dest file>\n");
+    // Hard-coded for now
+	srcFile = "inputFile";
+	destFile = "destFile";
 
-	fin = argv[1];
-	fout = argv[2];
-
-    // lookup the xia service 
-    if (!(dag = XgetDAGbyName(NAME)))
-		die(-1, "unable to locate: %s\n", NAME);
+    // Get the DAG for the Server
+    if (!(dag = XgetDAGbyName(SERVER_NAME)))
+		die(-1, "unable to locate: %s\n", SERVER_NAME);
 
 
-	// create a socket, and listen for incoming connections
+	// create a STREAM socket
 	if ((sock = Xsocket(XSOCK_STREAM)) < 0)
 		 die(-1, "Unable to create the listening socket\n");
     
+    // Connect the socket to the dag
 	if (Xconnect(sock, dag) < 0) {
 		Xclose(sock);
 		 die(-1, "Unable to bind to the dag: %s\n", dag);
@@ -214,7 +213,7 @@ int main(int argc, char **argv)
 
 
 	// send the file request
-	sprintf(cmd, "get %s",  fin);
+	sprintf(cmd, "get %s",  srcFile);
 	sendCmd(sock, cmd);
 
 	// get back number of chunks in the file
@@ -222,10 +221,12 @@ int main(int argc, char **argv)
 
 	int count = atoi(&reply[4]);
 
+    // CREATE CHUNK SOCKET
 	if ((chunkSock = Xsocket(XSOCK_CHUNK)) < 0)
 		die(-1, "unable to create chunk socket\n");
 
-	FILE *f = fopen(fout, "w");
+    // OPEN A FILE
+	FILE *file = fopen(destFile, "w");
 
 	offset = 0;
 	while (offset < count) {
@@ -240,16 +241,16 @@ int main(int argc, char **argv)
 		getReply(sock, reply, sizeof(reply));
 		offset += NUM_CHUNKS;
 
-		if (getFileData(chunkSock, f, &reply[4]) < 0) {
+		if (getFileData(chunkSock, file, &reply[4]) < 0) {
 			status= -1;
 			break;
 		}
 	}
 	
-	fclose(f);
+	fclose(file);
 
 	if (status < 0) {
-		unlink(fin);
+		unlink(srcFile);
 	}
 
 	say("shutting down\n");
