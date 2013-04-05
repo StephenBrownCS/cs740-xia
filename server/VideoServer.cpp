@@ -1,19 +1,3 @@
-/* ts=4 */
-/*
-** Copyright 2012, Carnegie Mellon University
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**    http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
 
 /*
 ** notes: (may not be up to date)
@@ -48,11 +32,121 @@
 
 using namespace std;
 
-// global configuration options
-int verbose = 1;
-string videoname;
+//GLOBAL CONFIGURATION OPTIONS
+int VERBOSE = 1;
+string VIDEO_NAME;
 
+// Container of CIDs
 vector<string> CIDlist;
+
+
+/*
+** display cmd line options and exit
+*/
+void help(const char *name);
+
+/*
+** configure the app
+*/
+void getConfig(int argc, char** argv);
+
+/*
+** simple code to create a formatted DAG
+**
+** The dag should be free'd by the calling code when no longer needed
+*/
+char *createDAG(const char *ad, const char *host, const char *id);
+
+/*
+** write the message to stdout unless in quiet mode
+*/
+void say(const char *fmt, ...);
+
+/*
+** always write the message to stdout
+*/
+void warn(const char *fmt, ...);
+
+
+/*
+** write the message to stdout, and exit the app
+*/
+void die(int ecode, const char *fmt, ...);
+
+
+/*
+** upload the video file as content chunks
+*/
+int uploadContent(const char *fname);
+
+
+/*
+** handle the request from the client and return the requested data
+*/
+void *processRequest (void *socketid)
+
+
+
+
+int main(int argc, char *argv[])
+{
+	char *dag;
+	int sock, acceptSock;
+	char myAD[1024]; 
+    char myHID[1024];   
+
+	getConfig(argc, argv);
+
+	// put the video file into the content cache
+	if (uploadContent(VIDEO_NAME.c_str()) != 0)
+		die(-1, "Unable to upload the video %s\n", VIDEO_NAME.c_str());
+
+	// create a socket, and listen for incoming connections
+	if ((sock = Xsocket(XSOCK_STREAM)) < 0)
+		 die(-1, "Unable to create the listening socket\n");
+
+    	// read the localhost AD and HID
+    	if ( XreadLocalHostAddr(sock, myAD, sizeof(myAD), myHID, sizeof(myHID)) < 0 )
+    		error("Reading localhost address");		 
+
+	// create the dag we will listen for incoming connections on
+	if (!(dag = createDAG(myAD, myHID, SID_VIDEO)))
+		die(-1, "Unable to create DAG: %s\n", dag); 
+
+	// register this service name to the name server 
+    	char * sname = (char*) malloc(snprintf(NULL, 0, "%s", SNAME) + 1);
+    	sprintf(sname, "%s", SNAME);  	
+    	if (XregisterName(sname, dag) < 0 )
+    		error("name register");		   
+    
+	if(Xbind(sock,dag) < 0)
+		 die(-1, "Unable to bind to the dag: %s\n", dag);
+
+	// we're done with this
+	free(dag);
+	
+
+   	while (1) {
+		say("\nListening...\n");
+   		
+		if ((acceptSock = Xaccept(sock)) < 0)
+			die(-1, "accept failed\n");
+
+		say("We have a new connection\n");
+		
+		// handle the connection in a new thread
+		pthread_t client;
+       	pthread_create(&client, NULL, processRequest, (void *)&acceptSock);
+	}
+	
+	Xclose(sock); // we should never reach here!
+	
+	return 0;
+}
+
+
+
+
 
 /*
 ** display cmd line options and exit
@@ -80,7 +174,7 @@ void getConfig(int argc, char** argv)
 		switch (c) {
 			case 'q':
 				// turn off info messages
-				verbose = 0;
+				VERBOSE = 0;
 				break;
 			case '?':
 			case 'h':
@@ -93,7 +187,7 @@ void getConfig(int argc, char** argv)
 	if (argc - optind != 1)
 		help(basename(argv[0]));
 
-	videoname = argv[optind];
+	VIDEO_NAME = argv[optind];
 }
 
 /*
@@ -115,7 +209,7 @@ char *createDAG(const char *ad, const char *host, const char *id)
 */
 void say(const char *fmt, ...)
 {
-	if (verbose) {
+	if (VERBOSE) {
 		va_list args;
 
 		va_start(args, fmt);
@@ -236,61 +330,5 @@ void *processRequest (void *socketid)
 	}
 	Xclose(acceptSock);
 	pthread_exit(NULL);
-}
-
-int main(int argc, char *argv[])
-{
-	char *dag;
-	int sock, acceptSock;
-	char myAD[1024]; 
-        char myHID[1024];   
-
-	getConfig(argc, argv);
-
-	// put the video file into the content cache
-	if (uploadContent(videoname.c_str()) != 0)
-		die(-1, "Unable to upload the video %s\n", videoname.c_str());
-
-	// create a socket, and listen for incoming connections
-	if ((sock = Xsocket(XSOCK_STREAM)) < 0)
-		 die(-1, "Unable to create the listening socket\n");
-
-    	// read the localhost AD and HID
-    	if ( XreadLocalHostAddr(sock, myAD, sizeof(myAD), myHID, sizeof(myHID)) < 0 )
-    		error("Reading localhost address");		 
-
-	// create the dag we will listen for incoming connections on
-	if (!(dag = createDAG(myAD, myHID, SID_VIDEO)))
-		die(-1, "Unable to create DAG: %s\n", dag); 
-
-	// register this service name to the name server 
-    	char * sname = (char*) malloc(snprintf(NULL, 0, "%s", SNAME) + 1);
-    	sprintf(sname, "%s", SNAME);  	
-    	if (XregisterName(sname, dag) < 0 )
-    		error("name register");		   
-    
-	if(Xbind(sock,dag) < 0)
-		 die(-1, "Unable to bind to the dag: %s\n", dag);
-
-	// we're done with this
-	free(dag);
-	
-
-   	while (1) {
-		say("\nListening...\n");
-   		
-		if ((acceptSock = Xaccept(sock)) < 0)
-			die(-1, "accept failed\n");
-
-		say("We have a new connection\n");
-		
-		// handle the connection in a new thread
-		pthread_t client;
-       	pthread_create(&client, NULL, processRequest, (void *)&acceptSock);
-	}
-	
-	Xclose(sock); // we should never reach here!
-	
-	return 0;
 }
 
