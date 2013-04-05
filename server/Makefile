@@ -4,10 +4,10 @@ CFLAGS=-I../XIASocket/API
 LDFLAGS =  -lprotobuf -lpthread
 LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
 
-all: $(LIBFILES) VideoClient
+all: $(LIBFILES) VideoServer
 
-VideoClient: VideoClient.cpp libXsocket.a
-	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp libXsocket.a $(LDFLAGS)
+VideoServer: VideoServer.cpp libXsocket.a
+	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoServer.cpp libXsocket.a $(LDFLAGS)
 
 libXsocket.a:
 	ln -s ../../XIASocket/API/libXsocket.a .
