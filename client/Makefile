@@ -1,6 +1,6 @@
 
 CC=g++
-CFLAGS=-I../XIASocket/API
+CFLAGS=-I../../XIASocket/API
 LDFLAGS =  -lprotobuf -lpthread
 LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
 
@@ -24,6 +24,6 @@ xsocket.py:
 
 clean:
 	rm -f $(LIBFILES)
-	rm *.o
+	rm VideoClient
 
 
