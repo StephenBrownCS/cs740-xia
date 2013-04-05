@@ -83,7 +83,7 @@ int uploadContent(const char *fname);
 /*
 ** handle the request from the client and return the requested data
 */
-void *processRequest (void *socketid)
+void *processRequest (void *socketid);
 
 
 
