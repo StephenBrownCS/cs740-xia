@@ -88,47 +88,60 @@ void *processRequest (void *socketid);
 
 
 
+//***************************************************************************
+//******                    MAIN METHOD                                 *****
+//***************************************************************************
+
 int main(int argc, char *argv[])
 {
 	char *dag;
-	int sock, acceptSock;
+	int sock;
 	char myAD[1024]; 
     char myHID[1024];   
 
 	getConfig(argc, argv);
 
 	// put the video file into the content cache
-	if (uploadContent(VIDEO_NAME.c_str()) != 0)
+	if (uploadContent(VIDEO_NAME.c_str()) != 0){
 		die(-1, "Unable to upload the video %s\n", VIDEO_NAME.c_str());
+    }
 
-	// create a socket, and listen for incoming connections
-	if ((sock = Xsocket(XSOCK_STREAM)) < 0)
+	// create a socket for listening on
+	if ((sock = Xsocket(XSOCK_STREAM)) < 0){
 		 die(-1, "Unable to create the listening socket\n");
+     }
 
-    	// read the localhost AD and HID
-    	if ( XreadLocalHostAddr(sock, myAD, sizeof(myAD), myHID, sizeof(myHID)) < 0 )
-    		error("Reading localhost address");		 
+    // read the localhost AD and HID
+    // stores what it finds into myAD and myHID
+    if ( XreadLocalHostAddr(sock, myAD, sizeof(myAD), myHID, sizeof(myHID)) < 0 ){
+        error("Reading localhost address");		 
+    }
 
 	// create the dag we will listen for incoming connections on
-	if (!(dag = createDAG(myAD, myHID, SID_VIDEO)))
+	if (!(dag = createDAG(myAD, myHID, SID_VIDEO))){
 		die(-1, "Unable to create DAG: %s\n", dag); 
+    }
 
 	// register this service name to the name server 
-    	char * sname = (char*) malloc(snprintf(NULL, 0, "%s", SNAME) + 1);
-    	sprintf(sname, "%s", SNAME);  	
-    	if (XregisterName(sname, dag) < 0 )
-    		error("name register");		   
+    char * sname = (char*) malloc(snprintf(NULL, 0, "%s", SNAME) + 1);
+    sprintf(sname, "%s", SNAME);  	
+    if (XregisterName(sname, dag) < 0 ){
+        error("name register");		   
+    }
     
-	if(Xbind(sock,dag) < 0)
+    // Bind our socket to the dag
+	if(Xbind(sock, dag) < 0){
 		 die(-1, "Unable to bind to the dag: %s\n", dag);
+	}
 
-	// we're done with this
+	// we're done with the dag
 	free(dag);
 	
 
    	while (1) {
 		say("\nListening...\n");
    		
+   		int acceptSock = NULL;
 		if ((acceptSock = Xaccept(sock)) < 0)
 			die(-1, "accept failed\n");
 
@@ -148,9 +161,6 @@ int main(int argc, char *argv[])
 
 
 
-/*
-** display cmd line options and exit
-*/
 void help(const char *name)
 {
 	printf("\n%s (%s)\n", TITLE, VERSION);
@@ -162,9 +172,7 @@ void help(const char *name)
 	exit(0);
 }
 
-/*
-** configure the app
-*/
+
 void getConfig(int argc, char** argv)
 {
 	int c;
@@ -190,11 +198,7 @@ void getConfig(int argc, char** argv)
 	VIDEO_NAME = argv[optind];
 }
 
-/*
-** simple code to create a formatted DAG
-**
-** The dag should be free'd by the calling code when no longer needed
-*/
+
 char *createDAG(const char *ad, const char *host, const char *id)
 {
 	int len = snprintf(NULL, 0, DAG, ad, host, id) + 1;
@@ -204,9 +208,7 @@ char *createDAG(const char *ad, const char *host, const char *id)
 	return dag;
 }
 
-/*
-** write the message to stdout unless in quiet mode
-*/
+
 void say(const char *fmt, ...)
 {
 	if (VERBOSE) {
@@ -218,9 +220,7 @@ void say(const char *fmt, ...)
 	}
 }
 
-/*
-** always write the message to stdout
-*/
+
 void warn(const char *fmt, ...)
 {
 	va_list args;
@@ -231,9 +231,7 @@ void warn(const char *fmt, ...)
 
 }
 
-/*
-** write the message to stdout, and exit the app
-*/
+
 void die(int ecode, const char *fmt, ...)
 {
 	va_list args;
@@ -245,9 +243,7 @@ void die(int ecode, const char *fmt, ...)
 	exit(ecode);
 }
 
-/*
-** upload the video file as content chunks
-*/
+
 int uploadContent(const char *fname)
 {
 	int count;
@@ -278,16 +274,13 @@ int uploadContent(const char *fname)
 	return 0;
 }
 	
-/*
-** handle the request from the client and return the requested data
-*/
+
 void *processRequest (void *socketid)
 {
 	int n;
 	char SIDReq[1024];
 	int *sock = (int*)socketid;
 	int acceptSock = *sock; 
-	
 	
 	memset(SIDReq, 0, sizeof(SIDReq));
 		
@@ -301,26 +294,34 @@ void *processRequest (void *socketid)
 		// since this is first time, you would return along with header
 		int found = SIDReqStr.find("numchunks");
 			
+		// If Request contains "numchunks", return number of CID's.
 		if(found != -1){
 			// cout << " Request asks for number of chunks \n";
 			stringstream yy;
 			yy << CIDlist.size();
 			string cidlistlen = yy.str();
+			
+			// Send back the number of CIDs
 			Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
-		} else {
-			// the request would have two parameters
-			// start-offset:end-offset
+		} 
+		else {
+			// Otherwise, if the request was not about the number of chunks,
+			// it must be a request for a certain chunk
+			
+			// Format of the request:   start-offset:end-offset
+			// Each offset position corresponds to a CID (chunk)
+			
+			// Parse the Request, extract start and end offsets
 			int findpos = SIDReqStr.find(":");
 			// split around this position
-			string str = SIDReqStr.substr(0,findpos);
+			string str = SIDReqStr.substr(0, findpos);
 			int start_offset = atoi(str.c_str()); 
 			str = SIDReqStr.substr(findpos + 1);
 			int end_offset = atoi(str.c_str());
 
 			// construct the string from CIDlist
-			// return the list of CIDs
+			// return the list of CIDs, NOT including end_offset
 			string requestedCIDlist = "";
-			// not including end_offset
 			for(int i = start_offset; i < end_offset; i++){
 				requestedCIDlist += CIDlist[i] + " ";
 			}		
