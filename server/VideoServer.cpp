@@ -141,15 +141,15 @@ int main(int argc, char *argv[])
    	while (1) {
 		say("\nListening...\n");
    		
-   		int acceptSock = 0;
-		if ((acceptSock = Xaccept(sock)) < 0)
+   		int* acceptSock = new int();
+		if ((*acceptSock = Xaccept(sock)) < 0)
 			die(-1, "accept failed\n");
 
 		say("We have a new connection\n");
 		
 		// handle the connection in a new thread
 		pthread_t client;
-       	pthread_create(&client, NULL, processRequest, (void *)&acceptSock);
+       	pthread_create(&client, NULL, processRequest, (void *)acceptSock);
 	}
 	
 	Xclose(sock); // we should never reach here!
@@ -289,6 +289,7 @@ void *processRequest (void *socketid)
 	if ((n = Xrecv(acceptSock, SIDReq, sizeof(SIDReq), 0)) <= 0) {
 	    cout << "Xrecv failed!" << endl;
 	    Xclose(acceptSock);
+	    delete sock;
 	    pthread_exit(NULL);
 	    return NULL;
 	}
@@ -337,6 +338,7 @@ void *processRequest (void *socketid)
     }
     
 	Xclose(acceptSock);
+	delete sock;
 	pthread_exit(NULL);
 }
 

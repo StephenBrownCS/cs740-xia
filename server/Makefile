@@ -1,6 +1,6 @@
 
 CC=g++
-CFLAGS=-I../../XIASocket/API
+CFLAGS=-I../../XIASocket/API -g
 LDFLAGS =  -lprotobuf -lpthread
 LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
 
