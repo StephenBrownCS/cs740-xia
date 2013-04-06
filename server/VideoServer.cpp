@@ -192,10 +192,12 @@ void getConfig(int argc, char** argv)
         }
     }
 
-    if (argc - optind != 1)
-        help(basename(argv[0]));
+    //if (argc - optind != 1)
+    //    help(basename(argv[0]));
 
-    VIDEO_NAME = argv[optind];
+    //VIDEO_NAME = argv[optind];
+    //HARD-CODED
+    VIDEO_NAME = "../../XIASocket/sample/video.ogv";
 }
 
 

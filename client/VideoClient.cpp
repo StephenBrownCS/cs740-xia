@@ -1,5 +1,5 @@
 /* ts=4 */
-
+#include <iostream>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -9,6 +9,8 @@
 #define VERSION "v1.0"
 #define TITLE "XIA Chunk File Client"
 #define SERVER_NAME "www_s.video.com.xia"
+
+using namespace std;
 
 //TODO: WHY IS THIS ALWAYS 10??????
 const int CHUNK_WINDOW_SIZE = 10;
@@ -95,13 +97,15 @@ int main(){
     char reply[REPLY_MAX_SIZE];
     receiveReply(sock, reply, sizeof(reply));
 
+    cout << "Received Reply for Number of Chunks: " << reply << endl;
+
     // Count will begin at the 5th character
     int numChunksInFile = atoi(&reply[4]);
 
     // Create chunk socket
     // We will use this to receive chunks
     if ((chunkSock = Xsocket(XSOCK_CHUNK)) < 0)
-        die(-1, "unable to create chunk socket\n");
+        die(-1, "Unable to create chunk socket\n");
 
     // Open a file for writing
     // TODO: Get rid of this
@@ -114,12 +118,15 @@ int main(){
         if (numChunksInFile - offset < numToReceive)
             numToReceive = numChunksInFile - offset;
 
+        cout << "Sending the chunks we want: " << offset << " , " << numToReceive << endl;
         // tell the server we want a list of <numToReceive> cids starting at location <offset>
         sprintf(cmd, "block %d:%d", offset, numToReceive);
         sendCmd(sock, cmd);
 
         receiveReply(sock, reply, sizeof(reply));
         // Reply is of form: OK: <CID>
+
+	cout << "Received reply for chunks: " << reply << endl;
         
         offset += CHUNK_WINDOW_SIZE;
 
@@ -219,7 +226,7 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     // Number of chunks in the CID List that we assemble
     int numChunks = 0;
     
-
+    cout << "Build list of chunk CID statuses" << endl;
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     char* next = NULL;
     while ((next = strchr(chunk_ptr, ' '))) {
@@ -227,7 +234,7 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
 
         char* dag = (char *)malloc(512);
         sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
-        //printf("getting %s\n", chunk_ptr);
+        printf("getting %s\n", chunk_ptr);
         chunkStatuses[numChunks].cidLen = strlen(dag);
         chunkStatuses[numChunks].cid = dag;
         numChunks++;
@@ -240,13 +247,13 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     {
         char* dag = (char *) malloc(512);
         sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
-        //printf("getting %s\n", chunk_ptr);
+        printf("getting %s\n", chunk_ptr);
         chunkStatuses[numChunks].cidLen = strlen(dag);
         chunkStatuses[numChunks].cid = dag;
         numChunks++;
     }
 
-
+    cout << "Bring List of Chunks Local" << endl;
     // BRING LIST OF CHUNKS LOCAL
     say("requesting list of %d chunks\n",numChunks);
     if (XrequestChunks(chunkSock, chunkStatuses, numChunks) < 0) {
