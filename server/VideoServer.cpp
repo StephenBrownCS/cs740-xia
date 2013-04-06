@@ -308,6 +308,7 @@ void *processRequest (void *socketid)
         string cidlistlen = yy.str();
         
         // Send back the number of CIDs
+		cout << "Sending back " << cidlistlen << endl;
         Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
     } 
     else {
@@ -334,7 +335,7 @@ void *processRequest (void *socketid)
             requestedCIDlist += CIDlist[i] + " ";
         }       
         Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
-        cout << "sending " << requestedCIDlist << endl;
+        cout << "sending requested CID list: " << requestedCIDlist << endl;
     }
     
     Xclose(acceptSock);

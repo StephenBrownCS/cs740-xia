@@ -38,6 +38,11 @@ int sendCmd(int sock, const char *cmd);
 
 int receiveReply(int sock, char *reply, int sz);
 
+/*
+** Receive number of chunks
+*/
+int receiveNumberOfChunks(int sock);
+
 int getFileData(int chunkSock, FILE *fd, char *chunks);
 
 
@@ -86,17 +91,13 @@ int main(){
     *p = 0;
 
 
-    // send the file request
-    sprintf(cmd, "get %s",  srcFile);
+    // send the request for the number of chunks
+    sprintf(cmd, "get %s",  "numchunks");
     sendCmd(sock, cmd);
 
     // GET NUMBER OF CHUNKS
     // Receive the reply string
-    char reply[REPLY_MAX_SIZE];
-    receiveReply(sock, reply, sizeof(reply));
-
-    // Count will begin at the 5th character
-    int numChunksInFile = atoi(&reply[4]);
+	int numChunksInFile = receiveNumberOfChunks(sock);
 
     // Create chunk socket
     // We will use this to receive chunks
@@ -195,7 +196,7 @@ int receiveReply(int sock, char *reply, int size)
     // Receive (up to) size bytes from the socket, write to reply
     if ((n = Xrecv(sock, reply, size, 0))  < 0) {
         Xclose(sock);
-         die(-1, "Unable to communicate with the server\n");
+        die(-1, "Unable to communicate with the server\n");
     }
 
     // If the first 3 characters were not "OK:", die
@@ -209,6 +210,23 @@ int receiveReply(int sock, char *reply, int size)
     // Return number of bytes successfully received
     return n;
 }
+
+
+int receiveNumberOfChunks(int sock)
+{
+	char buffer = new char[REPLY_MAX_SIZE];
+	
+    // Receive (up to) size bytes from the socket, write to reply
+    if ((n = Xrecv(sock, buffer, sizeof(buffer), 0))  < 0) {
+        Xclose(sock);
+        die(-1, "Unable to communicate with the server\n");
+    }
+
+	int numberOfChunks = atoi(buffer);
+	delete[] buffer;
+	return numberOfChunks
+}
+
 
 
 int getFileData(int chunkSock, FILE *fd, char *chunks)

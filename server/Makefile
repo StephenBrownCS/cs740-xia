@@ -1,6 +1,6 @@
 
 CC=g++
-CFLAGS=-I../../XIASocket/API -g
+CFLAGS=-I../xia-core/XIASocket/API -g
 LDFLAGS =  -lprotobuf -lpthread
 LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
 
@@ -10,16 +10,16 @@ VideoServer: VideoServer.cpp libXsocket.a
 	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoServer.cpp libXsocket.a $(LDFLAGS)
 
 libXsocket.a:
-	ln -s ../../XIASocket/API/libXsocket.a .
+	ln -s ../xia-core/XIASocket/API/libXsocket.a .
 
 libXsocket.so:
-	ln -s ../../XIASocket/API/libXsocket.so .
+	ln -s ../xia-core/XIASocket/API/libXsocket.so .
 
 _xsocket.so:
-	ln -s ../../XIASocket/API/python/_xsocket.so .
+	ln -s ../xia-core/XIASocket/API/python/_xsocket.so .
 
 xsocket.py:
-	ln -s ../../XIASocket/API/python/xsocket.py .
+	ln -s ../xia-core/XIASocket/API/python/xsocket.py .
 
 
 clean:
