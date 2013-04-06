@@ -47,102 +47,102 @@ int getFileData(int chunkSock, FILE *fd, char *chunks);
 //***************************************************************************
 
 int main(){
-	int sock, chunkSock;
-	int offset;
-	char *dag;
-	char *p;
-	const char *srcFile;
-	const char *destFile;
-	char cmd[512];
-	int status = 0;
+    int sock, chunkSock;
+    int offset;
+    char *dag;
+    char *p;
+    const char *srcFile;
+    const char *destFile;
+    char cmd[512];
+    int status = 0;
 
-	say ("\n%s (%s): started\n", TITLE, VERSION);
+    say ("\n%s (%s): started\n", TITLE, VERSION);
 
     // Hard-coded for now
-	srcFile = "inputFile";
-	destFile = "destFile";
+    srcFile = "inputFile";
+    destFile = "destFile";
 
     // Get the DAG for the Server
     if (!(dag = XgetDAGbyName(SERVER_NAME)))
-		die(-1, "unable to locate: %s\n", SERVER_NAME);
+        die(-1, "unable to locate: %s\n", SERVER_NAME);
 
-	// create a STREAM socket
-	if ((sock = Xsocket(XSOCK_STREAM)) < 0)
-		 die(-1, "Unable to create the listening socket\n");
+    // create a STREAM socket
+    if ((sock = Xsocket(XSOCK_STREAM)) < 0)
+         die(-1, "Unable to create the listening socket\n");
     
     // Connect the socket to the server dag
-	if (Xconnect(sock, dag) < 0) {
-		Xclose(sock);
-		 die(-1, "Unable to bind to the dag: %s\n", dag);
-	}
+    if (Xconnect(sock, dag) < 0) {
+        Xclose(sock);
+         die(-1, "Unable to bind to the dag: %s\n", dag);
+    }
 
-	// save the AD and HID for later. This seems hacky
-	// we need to find a better way to deal with this
-	SERVER_AD = strchr(dag, ' ') + 1;
-	p = strchr(SERVER_AD, ' ');
-	*p = 0;
-	SERVER_HID = p + 1;
-	p = strchr(SERVER_HID, ' ');
-	*p = 0;
+    // save the AD and HID for later. This seems hacky
+    // we need to find a better way to deal with this
+    SERVER_AD = strchr(dag, ' ') + 1;
+    p = strchr(SERVER_AD, ' ');
+    *p = 0;
+    SERVER_HID = p + 1;
+    p = strchr(SERVER_HID, ' ');
+    *p = 0;
 
 
-	// send the file request
-	sprintf(cmd, "get %s",  srcFile);
-	sendCmd(sock, cmd);
+    // send the file request
+    sprintf(cmd, "get %s",  srcFile);
+    sendCmd(sock, cmd);
 
-	// GET NUMBER OF CHUNKS
-	// Receive the reply string
-	char reply[REPLY_MAX_SIZE];
-	receiveReply(sock, reply, sizeof(reply));
+    // GET NUMBER OF CHUNKS
+    // Receive the reply string
+    char reply[REPLY_MAX_SIZE];
+    receiveReply(sock, reply, sizeof(reply));
 
     // Count will begin at the 5th character
-	int numChunksInFile = atoi(&reply[4]);
+    int numChunksInFile = atoi(&reply[4]);
 
     // Create chunk socket
     // We will use this to receive chunks
-	if ((chunkSock = Xsocket(XSOCK_CHUNK)) < 0)
-		die(-1, "unable to create chunk socket\n");
+    if ((chunkSock = Xsocket(XSOCK_CHUNK)) < 0)
+        die(-1, "unable to create chunk socket\n");
 
     // Open a file for writing
     // TODO: Get rid of this
-	FILE *file = fopen(destFile, "w");
+    FILE *file = fopen(destFile, "w");
 
     // RECEIVE EACH CHUNK
-	offset = 0;
-	while (offset < numChunksInFile) {
-		int numToReceive = CHUNK_WINDOW_SIZE;
-		if (numChunksInFile - offset < numToReceive)
-			numToReceive = numChunksInFile - offset;
+    offset = 0;
+    while (offset < numChunksInFile) {
+        int numToReceive = CHUNK_WINDOW_SIZE;
+        if (numChunksInFile - offset < numToReceive)
+            numToReceive = numChunksInFile - offset;
 
-		// tell the server we want a list of <numToReceive> cids starting at location <offset>
-		sprintf(cmd, "block %d:%d", offset, numToReceive);
-		sendCmd(sock, cmd);
+        // tell the server we want a list of <numToReceive> cids starting at location <offset>
+        sprintf(cmd, "block %d:%d", offset, numToReceive);
+        sendCmd(sock, cmd);
 
-		receiveReply(sock, reply, sizeof(reply));
-		// Reply is of form: OK: <CID>
-		
-		offset += CHUNK_WINDOW_SIZE;
+        receiveReply(sock, reply, sizeof(reply));
+        // Reply is of form: OK: <CID>
+        
+        offset += CHUNK_WINDOW_SIZE;
 
         // TODO: Instead of getFileData, we will want to do something 
         // with each video chunk
-		if (getFileData(chunkSock, file, &reply[4]) < 0) {
-			status= -1;
-			break;
-		}
-	}
-	
-	// TODO: Get rid of this
-	fclose(file);
+        if (getFileData(chunkSock, file, &reply[4]) < 0) {
+            status= -1;
+            break;
+        }
+    }
+    
+    // TODO: Get rid of this
+    fclose(file);
 
-	if (status < 0) {
-		unlink(srcFile);
-	}
+    if (status < 0) {
+        unlink(srcFile);
+    }
 
-	say("shutting down\n");
-	sendCmd(sock, "done");
-	Xclose(sock);
-	Xclose(chunkSock);
-	return status;
+    say("shutting down\n");
+    sendCmd(sock, "done");
+    Xclose(sock);
+    Xclose(chunkSock);
+    return status;
 }
 
 
@@ -156,88 +156,88 @@ int main(){
 
 void say(const char *fmt, ...)
 {
-	if (VERBOSE) {
-		va_list args;
+    if (VERBOSE) {
+        va_list args;
 
-		va_start(args, fmt);
-		vprintf(fmt, args);
-		va_end(args);
-	}
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+    }
 }
 
 void die(int ecode, const char *fmt, ...)
 {
-	va_list args;
+    va_list args;
 
-	va_start(args, fmt);
-	vfprintf(stdout, fmt, args);
-	va_end(args);
-	fprintf(stdout, "%s: exiting\n", TITLE);
-	exit(ecode);
+    va_start(args, fmt);
+    vfprintf(stdout, fmt, args);
+    va_end(args);
+    fprintf(stdout, "%s: exiting\n", TITLE);
+    exit(ecode);
 }
 
 int sendCmd(int sock, const char *cmd)
 {
-	int n;
+    int n;
 
-	if ((n = Xsend(sock, cmd,  strlen(cmd), 0)) < 0) {
-		Xclose(sock);
-		 die(-1, "Unable to communicate with the server\n");
-	}
+    if ((n = Xsend(sock, cmd,  strlen(cmd), 0)) < 0) {
+        Xclose(sock);
+         die(-1, "Unable to communicate with the server\n");
+    }
 
-	return n;
+    return n;
 }
 
 int receiveReply(int sock, char *reply, int size)
 {
-	int n;
+    int n;
 
     // Receive (up to) size bytes from the socket, write to reply
-	if ((n = Xrecv(sock, reply, size, 0))  < 0) {
-		Xclose(sock);
-		 die(-1, "Unable to communicate with the server\n");
-	}
+    if ((n = Xrecv(sock, reply, size, 0))  < 0) {
+        Xclose(sock);
+         die(-1, "Unable to communicate with the server\n");
+    }
 
     // If the first 3 characters were not "OK:", die
-	if (strncmp(reply, "OK:", 3) != 0) {
-		die(-1, "%s\n", reply);
-	}
+    if (strncmp(reply, "OK:", 3) != 0) {
+        die(-1, "%s\n", reply);
+    }
 
     //Append null character
-	reply[n] = 0;
+    reply[n] = 0;
 
     // Return number of bytes successfully received
-	return n;
+    return n;
 }
 
 
 int getFileData(int chunkSock, FILE *fd, char *chunks)
 {
-	ChunkStatus chunkStatuses[CHUNK_WINDOW_SIZE];
-	char *chunk_ptr = chunks;
-	
-	// Number of chunks in the CID List that we assemble
-	int numChunks = 0;
-	
+    ChunkStatus chunkStatuses[CHUNK_WINDOW_SIZE];
+    char *chunk_ptr = chunks;
+    
+    // Number of chunks in the CID List that we assemble
+    int numChunks = 0;
+    
 
-	// build the list of chunk CID chunkStatuses (including Dags) to retrieve
-	char* next = NULL;
-	while ((next = strchr(chunk_ptr, ' '))) {
-		*next = 0;
+    // build the list of chunk CID chunkStatuses (including Dags) to retrieve
+    char* next = NULL;
+    while ((next = strchr(chunk_ptr, ' '))) {
+        *next = 0;
 
-		char* dag = (char *)malloc(512);
-		sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
+        char* dag = (char *)malloc(512);
+        sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
-		chunkStatuses[numChunks].cidLen = strlen(dag);
-		chunkStatuses[numChunks].cid = dag;
-		numChunks++;
-		
-		// Set chunk_ptr to point to the next position (following the space)
-		chunk_ptr = next + 1;
-	}
-	
+        chunkStatuses[numChunks].cidLen = strlen(dag);
+        chunkStatuses[numChunks].cid = dag;
+        numChunks++;
+        
+        // Set chunk_ptr to point to the next position (following the space)
+        chunk_ptr = next + 1;
+    }
+    
     // Add the last chunk CID onto the end of the CID chunkStatus list
-	{
+    {
         char* dag = (char *) malloc(512);
         sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
@@ -247,59 +247,59 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     }
 
 
-	// BRING LIST OF CHUNKS LOCAL
-	say("requesting list of %d chunks\n",numChunks);
-	if (XrequestChunks(chunkSock, chunkStatuses, numChunks) < 0) {
-		say("unable to request chunks\n");
-		return -1;
-	}
+    // BRING LIST OF CHUNKS LOCAL
+    say("requesting list of %d chunks\n",numChunks);
+    if (XrequestChunks(chunkSock, chunkStatuses, numChunks) < 0) {
+        say("unable to request chunks\n");
+        return -1;
+    }
 
 
     // IDLE AROUND UNTIL ALL CHUNKS ARE READY
-	say("checking chunk status\n");
-	while (1) {
-		int status = XgetChunkStatuses(chunkSock, chunkStatuses,numChunks);
+    say("checking chunk status\n");
+    while (1) {
+        int status = XgetChunkStatuses(chunkSock, chunkStatuses,numChunks);
 
-		if (status == READY_TO_READ){
-			break;
+        if (status == READY_TO_READ){
+            break;
         }
-		else if (status < 0) { // REQUEST_FAILED Or INVALID_HASH
-			say("error getting chunk status\n");
-			return -1;
+        else if (status < 0) { // REQUEST_FAILED Or INVALID_HASH
+            say("error getting chunk status\n");
+            return -1;
 
-		} else if (status == WAITING_FOR_CHUNK) {
-			// one or more chunks aren't ready.
-			say("waiting... one or more chunks aren't ready yet\n");
-		}
-		sleep(1);
-	}
+        } else if (status == WAITING_FOR_CHUNK) {
+            // one or more chunks aren't ready.
+            say("waiting... one or more chunks aren't ready yet\n");
+        }
+        sleep(1);
+    }
 
-	say("all chunks ready\n");
+    say("all chunks ready\n");
 
 
     // RECEIVE EACH CHUNK
-	for (int i = 0; i < numChunks; i++) {
-		char *cid = strrchr(chunkStatuses[i].cid, ':');
-		cid++;
-		say("reading chunk %s\n", cid);
-		
-		// Receive the chunk, and write into data buffer
-		char data[XIA_MAXCHUNK];
-		int len = 0;
-		if ((len = XreadChunk(chunkSock, data, sizeof(data), 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
-			say("error getting chunk\n");
-			return -1;
-		}
+    for (int i = 0; i < numChunks; i++) {
+        char *cid = strrchr(chunkStatuses[i].cid, ':');
+        cid++;
+        say("reading chunk %s\n", cid);
+        
+        // Receive the chunk, and write into data buffer
+        char data[XIA_MAXCHUNK];
+        int len = 0;
+        if ((len = XreadChunk(chunkSock, data, sizeof(data), 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
+            say("error getting chunk\n");
+            return -1;
+        }
 
-		// write the chunåk to disk
+        // write the chunåk to disk
         //say("writing %d bytes of chunk %s to disk\n", len, cid);
-		fwrite(data, 1, len, fd);
+        fwrite(data, 1, len, fd);
 
-		free(chunkStatuses[i].cid);
-		chunkStatuses[i].cid = NULL;
-		chunkStatuses[i].cidLen = 0;
-	}
+        free(chunkStatuses[i].cid);
+        chunkStatuses[i].cid = NULL;
+        chunkStatuses[i].cidLen = 0;
+    }
 
-	return numChunks;
+    return numChunks;
 }
 
