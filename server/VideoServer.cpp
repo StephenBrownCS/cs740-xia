@@ -285,50 +285,57 @@ void *processRequest (void *socketid)
 	memset(SIDReq, 0, sizeof(SIDReq));
 		
 	//Receive packet
-		
-	if ((n = Xrecv(acceptSock, SIDReq, sizeof(SIDReq), 0)) > 0) {
-			
-		string SIDReqStr(SIDReq);
-		// cout << "Got request: " << SIDReqStr << "\n";
-		// if the request is about number of chunks return number of chunks
-		// since this is first time, you would return along with header
-		int found = SIDReqStr.find("numchunks");
-			
-		// If Request contains "numchunks", return number of CID's.
-		if(found != -1){
-			// cout << " Request asks for number of chunks \n";
-			stringstream yy;
-			yy << CIDlist.size();
-			string cidlistlen = yy.str();
-			
-			// Send back the number of CIDs
-			Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
-		} 
-		else {
-			// Otherwise, if the request was not about the number of chunks,
-			// it must be a request for a certain chunk
-			
-			// Format of the request:   start-offset:end-offset
-			// Each offset position corresponds to a CID (chunk)
-			
-			// Parse the Request, extract start and end offsets
-			int findpos = SIDReqStr.find(":");
-			// split around this position
-			string str = SIDReqStr.substr(0, findpos);
-			int start_offset = atoi(str.c_str()); 
-			str = SIDReqStr.substr(findpos + 1);
-			int end_offset = atoi(str.c_str());
-
-			// construct the string from CIDlist
-			// return the list of CIDs, NOT including end_offset
-			string requestedCIDlist = "";
-			for(int i = start_offset; i < end_offset; i++){
-				requestedCIDlist += CIDlist[i] + " ";
-			}		
-			Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
-			cout << "sending " << requestedCIDlist << "\n";
-		}
+	say("Receiving packet...\n");
+	if ((n = Xrecv(acceptSock, SIDReq, sizeof(SIDReq), 0)) <= 0) {
+	    cout << "Xrecv failed!" << endl;
+	    Xclose(acceptSock);
+	    pthread_exit(NULL);
+	    return;
 	}
+		
+    string SIDReqStr(SIDReq);
+    cout << "Got request: " << SIDReqStr << endl;
+    // if the request is about number of chunks return number of chunks
+    // since this is first time, you would return along with header
+    int found = SIDReqStr.find("numchunks");
+        
+    // If Request contains "numchunks", return number of CID's.
+    if(found != -1){
+        cout << " Request asks for number of chunks " << endl;
+        stringstream yy;
+        yy << CIDlist.size();
+        string cidlistlen = yy.str();
+        
+        // Send back the number of CIDs
+        Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
+    } 
+    else {
+        // Otherwise, if the request was not about the number of chunks,
+        // it must be a request for a certain chunk
+        
+        // Format of the request:   start-offset:end-offset
+        // Each offset position corresponds to a CID (chunk)
+        
+        cout << "Request is for a certain chunk span" << endl;
+        
+        // Parse the Request, extract start and end offsets
+        int findpos = SIDReqStr.find(":");
+        // split around this position
+        string str = SIDReqStr.substr(0, findpos);
+        int start_offset = atoi(str.c_str()); 
+        str = SIDReqStr.substr(findpos + 1);
+        int end_offset = atoi(str.c_str());
+
+        // construct the string from CIDlist
+        // return the list of CIDs, NOT including end_offset
+        string requestedCIDlist = "";
+        for(int i = start_offset; i < end_offset; i++){
+            requestedCIDlist += CIDlist[i] + " ";
+        }		
+        Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
+        cout << "sending " << requestedCIDlist << endl;
+    }
+    
 	Xclose(acceptSock);
 	pthread_exit(NULL);
 }
