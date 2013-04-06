@@ -290,7 +290,7 @@ void *processRequest (void *socketid)
 	    cout << "Xrecv failed!" << endl;
 	    Xclose(acceptSock);
 	    pthread_exit(NULL);
-	    return;
+	    return NULL;
 	}
 		
     string SIDReqStr(SIDReq);
