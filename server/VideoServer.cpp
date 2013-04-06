@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
    	while (1) {
 		say("\nListening...\n");
    		
-   		int acceptSock = NULL;
+   		int acceptSock = 0;
 		if ((acceptSock = Xaccept(sock)) < 0)
 			die(-1, "accept failed\n");
 
