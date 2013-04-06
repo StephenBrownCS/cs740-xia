@@ -46,8 +46,7 @@ int getFileData(int chunkSock, FILE *fd, char *chunks);
 //******                    MAIN METHOD                                 *****
 //***************************************************************************
 
-int main(int argc, char **argv)
-{
+int main(){
 	int sock, chunkSock;
 	int offset;
 	char *dag;
@@ -222,14 +221,15 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
 	
 
 	// build the list of chunk CID chunkStatuses (including Dags) to retrieve
-	while ((char* next = strchr(chunk_ptr, ' '))) {
+	char* next = NULL;
+	while ((next = strchr(chunk_ptr, ' '))) {
 		*next = 0;
 
 		char* dag = (char *)malloc(512);
 		sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
-		chunkStatuses[n].cidLen = strlen(dag);
-		chunkStatuses[n].cid = dag;
+		chunkStatuses[numChunks].cidLen = strlen(dag);
+		chunkStatuses[numChunks].cid = dag;
 		numChunks++;
 		
 		// Set chunk_ptr to point to the next position (following the space)
@@ -241,8 +241,8 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
         char* dag = (char *) malloc(512);
         sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
-        chunkStatuses[n].cidLen = strlen(dag);
-        chunkStatuses[n].cid = dag;
+        chunkStatuses[numChunks].cidLen = strlen(dag);
+        chunkStatuses[numChunks].cid = dag;
         numChunks++;
     }
 
