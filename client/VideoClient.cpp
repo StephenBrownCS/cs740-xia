@@ -54,7 +54,6 @@ int getFileData(int chunkSock, FILE *fd, char *chunks);
 int main(){
     int sock, chunkSock;
     int offset;
-    char *dag;
     char *p;
     const char *srcFile;
     const char *destFile;
@@ -68,15 +67,21 @@ int main(){
     destFile = "destFile";
 
     // Get the DAG for the Server
-    if (!(dag = XgetDAGbyName(SERVER_NAME)))
+    
+    // I have no idea what sock_addr is used for... it was added in the API update
+    sockaddr_x dag;
+    socklen_t dag_length = sizeof(dag);
+    if (XgetDAGbyName(SERVER_NAME, &sock_addr, &dag_length) < 0){
         die(-1, "unable to locate: %s\n", SERVER_NAME);
+    }
 
     // create a STREAM socket
-    if ((sock = Xsocket(XSOCK_STREAM)) < 0)
+    // XSOCK_STREAM is for reliable communications (SID)
+    if ((sock = Xsocket(AF_XIA, XSOCK_STREAM, 0)) < 0)
          die(-1, "Unable to create the listening socket\n");
     
     // Connect the socket to the server dag
-    if (Xconnect(sock, dag) < 0) {
+    if (Xconnect(sock, dag, sizeof(dag)) < 0) {
         Xclose(sock);
          die(-1, "Unable to bind to the dag: %s\n", dag);
     }
@@ -101,7 +106,7 @@ int main(){
 
     // Create chunk socket
     // We will use this to receive chunks
-    if ((chunkSock = Xsocket(XSOCK_CHUNK)) < 0)
+    if ((chunkSock = Xsocket(AF_XIA, XSOCK_CHUNK, 0)) < 0)
         die(-1, "unable to create chunk socket\n");
 
     // Open a file for writing
@@ -119,6 +124,7 @@ int main(){
         sprintf(cmd, "block %d:%d", offset, numToReceive);
         sendCmd(sock, cmd);
 
+        char reply[REPLY_MAX_SIZE];
         receiveReply(sock, reply, sizeof(reply));
         // Reply is of form: OK: <CID>
         
@@ -214,10 +220,10 @@ int receiveReply(int sock, char *reply, int size)
 
 int receiveNumberOfChunks(int sock)
 {
-	char buffer = new char[REPLY_MAX_SIZE];
+	char* buffer = new char[REPLY_MAX_SIZE];
 	
     // Receive (up to) size bytes from the socket, write to reply
-    if ((n = Xrecv(sock, buffer, sizeof(buffer), 0))  < 0) {
+    if (Xrecv(sock, buffer, sizeof(buffer), 0)  < 0) {
         Xclose(sock);
         die(-1, "Unable to communicate with the server\n");
     }
