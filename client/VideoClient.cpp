@@ -69,9 +69,9 @@ int main(){
     // Get the DAG for the Server
     
     // I have no idea what sock_addr is used for... it was added in the API update
-    sockaddr_x dag;
+    sockaddr dag;
     socklen_t dag_length = sizeof(dag);
-    if (XgetDAGbyName(SERVER_NAME, &sock_addr, &dag_length) < 0){
+    if (XgetDAGbyName(SERVER_NAME, &dag, &dag_length) < 0){
         die(-1, "unable to locate: %s\n", SERVER_NAME);
     }
 
@@ -230,7 +230,7 @@ int receiveNumberOfChunks(int sock)
 
 	int numberOfChunks = atoi(buffer);
 	delete[] buffer;
-	return numberOfChunks
+	return numberOfChunks;
 }
 
 
