@@ -1,29 +1,33 @@
+include ../../xia-core/xia.mk
 
-CC=g++
-CFLAGS=-I../../XIASocket/API
-LDFLAGS =  -lprotobuf -lpthread
-LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
+#CC=g++
+#CFLAGS=-I../../xia-core/api/xsocket
+#CFLAGS=-g
+#LDFLAGS =  -lprotobuf -lpthread
+#LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
+LDFLAGS += $(LIBS)
 
-all: $(LIBFILES) VideoClient
+#XIADIR = /home/xia/xia-core
 
-VideoClient: VideoClient.cpp libXsocket.a
-	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp libXsocket.a $(LDFLAGS)
+all: VideoClient
 
-libXsocket.a:
-	ln -s ../../XIASocket/API/libXsocket.a .
+VideoClient: VideoClient.cpp
+	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp $(LDFLAGS)
 
-libXsocket.so:
-	ln -s ../../XIASocket/API/libXsocket.so .
+#libXsocket.a:
+#	ln -s ../../xia-core/api/xsocket/libXsocket.a .
 
-_xsocket.so:
-	ln -s ../../XIASocket/API/python/_xsocket.so .
+#libXsocket.so:
+#	ln -s ../../xia-core/api/xsocket/libXsocket.so .
 
-xsocket.py:
-	ln -s ../../XIASocket/API/python/xsocket.py .
+#_xsocket.so:
+#	ln -s ../../xia-core/api/socket/API/python/_xsocket.so .
+
+#xsocket.py:
+#	ln -s ../../xia/core/api/socket/API/python/xsocket.py .
 
 
 clean:
-	rm -f $(LIBFILES)
 	rm VideoClient
 
 
