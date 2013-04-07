@@ -47,9 +47,9 @@ int getFileData(int chunkSock, FILE *fd, char *chunks);
 
 
 
-//***************************************************************************
-//******                    MAIN METHOD                                 *****
-//***************************************************************************
+// ***************************************************************************
+// ******                    MAIN METHOD                                 *****
+// ***************************************************************************
 
 int main(){
     int sock, chunkSock;
@@ -69,7 +69,7 @@ int main(){
     // Get the DAG for the Server
     
     // I have no idea what sock_addr is used for... it was added in the API update
-    sockaddr dag;
+    sockaddr_x dag;
     socklen_t dag_length = sizeof(dag);
     if (XgetDAGbyName(SERVER_NAME, &dag, &dag_length) < 0){
         die(-1, "unable to locate: %s\n", SERVER_NAME);
@@ -79,22 +79,26 @@ int main(){
     // XSOCK_STREAM is for reliable communications (SID)
     if ((sock = Xsocket(AF_XIA, XSOCK_STREAM, 0)) < 0)
          die(-1, "Unable to create the listening socket\n");
-    
+
+    sockaddr server_dag;    
     // Connect the socket to the server dag
-    if (Xconnect(sock, &dag, sizeof(dag)) < 0) {
+    if (Xconnect(sock, &server_dag, sizeof(server_dag)) < 0) {
         Xclose(sock);
          die(-1, "Unable to bind to the dag: %s\n", dag);
     }
 
+    // NOTE: YOu can't do this any more! Need to find another way
+    // CMU Comments:
     // save the AD and HID for later. This seems hacky
     // we need to find a better way to deal with this
+    /*
     SERVER_AD = strchr(dag, ' ') + 1;
     p = strchr(SERVER_AD, ' ');
     *p = 0;
     SERVER_HID = p + 1;
     p = strchr(SERVER_HID, ' ');
     *p = 0;
-
+    */
 
     // send the request for the number of chunks
     sprintf(cmd, "get %s",  "numchunks");
