@@ -81,7 +81,7 @@ int main(){
          die(-1, "Unable to create the listening socket\n");
     
     // Connect the socket to the server dag
-    if (Xconnect(sock, dag, sizeof(dag)) < 0) {
+    if (Xconnect(sock, &dag, sizeof(dag)) < 0) {
         Xclose(sock);
          die(-1, "Unable to bind to the dag: %s\n", dag);
     }
