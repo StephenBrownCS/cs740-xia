@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "Xsocket.h"
+#include "dagaddr.hpp"
 
 #define VERSION "v1.0"
 #define TITLE "XIA Chunk File Client"
@@ -69,9 +70,9 @@ int main(){
     // Get the DAG for the Server
     
     // I have no idea what sock_addr is used for... it was added in the API update
-    sockaddr_x dag;
-    socklen_t dag_length = sizeof(dag);
-    if (XgetDAGbyName(SERVER_NAME, &dag, &dag_length) < 0){
+    sockaddr_x server_dag;
+    socklen_t dag_length = sizeof(server_dag);
+    if (XgetDAGbyName(SERVER_NAME, &server_dag, &dag_length) < 0){
         die(-1, "unable to locate: %s\n", SERVER_NAME);
     }
 
@@ -83,7 +84,7 @@ int main(){
     // Connect the socket to the server dag
     if (Xconnect(sock, (struct sockaddr*)&server_dag, dag_length) < 0) {
         Xclose(sock);
-         die(-1, "Unable to bind to the dag: %s\n", dag);
+         die(-1, "Unable to bind to the dag: %s\n", server_dag);
     }
 
     // OLD WAY
