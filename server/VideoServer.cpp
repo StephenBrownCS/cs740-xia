@@ -281,7 +281,7 @@ void getConfig(int argc, char** argv)
 
     //VIDEO_NAME = argv[optind];
     //HARD-CODED
-    VIDEO_NAME = "../../XIASocket/sample/video.ogv";
+    VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
 }
 
 
@@ -335,11 +335,12 @@ int uploadContent(const char *fname)
     int count;
 
     say("loading video file: %s\n", fname);
-
+    cout << "Allocating cache slice" << endl;
     ChunkContext *ctx = XallocCacheSlice(POLICY_DEFAULT, 0, 20000000);
     if (ctx == NULL)
         die(-2, "Unable to initilize the chunking system\n");
 
+    cout << "Putting the file..." << endl;
     ChunkInfo *info;
     if ((count = XputFile(ctx, fname, CHUNKSIZE, &info)) < 0)
         die(-3, "unable to process the video file\n");
