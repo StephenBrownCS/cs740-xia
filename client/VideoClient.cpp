@@ -80,17 +80,13 @@ int main(){
     if ((sock = Xsocket(AF_XIA, XSOCK_STREAM, 0)) < 0)
          die(-1, "Unable to create the listening socket\n");
 
-    sockaddr server_dag;    
     // Connect the socket to the server dag
-    if (Xconnect(sock, &server_dag, sizeof(server_dag)) < 0) {
+    if (Xconnect(sock, (struct sockaddr*)&server_dag, dag_length) < 0) {
         Xclose(sock);
          die(-1, "Unable to bind to the dag: %s\n", dag);
     }
 
-    // NOTE: YOu can't do this any more! Need to find another way
-    // CMU Comments:
-    // save the AD and HID for later. This seems hacky
-    // we need to find a better way to deal with this
+    // OLD WAY
     /*
     SERVER_AD = strchr(dag, ' ') + 1;
     p = strchr(SERVER_AD, ' ');
@@ -99,6 +95,20 @@ int main(){
     p = strchr(SERVER_HID, ' ');
     *p = 0;
     */
+
+	// NEW WAY
+	// save the AD and HID for later. This seems hacky
+	// we need to find a better way to deal with this
+	Graph g(&server_dag);
+	char sdag[1024];
+	strncpy(sdag, g.dag_string().c_str(), sizeof(sdag));
+	SERVER_AD = strstr(sdag, "AD:");
+	p = strchr(SERVER_AD, ' ');
+	*p = 0;
+	SERVER_HID = p + 1;
+	SERVER_HID = strstr(SERVER_HID, "HID:");
+	p = strchr(SERVER_HID, ' ');
+	*p = 0;
 
     // send the request for the number of chunks
     sprintf(cmd, "get %s",  "numchunks");
@@ -155,88 +165,6 @@ int main(){
     Xclose(chunkSock);
     return status;
 }
-
-
-
-
-
-
-
-
-
-
-void say(const char *fmt, ...)
-{
-    if (VERBOSE) {
-        va_list args;
-
-        va_start(args, fmt);
-        vprintf(fmt, args);
-        va_end(args);
-    }
-}
-
-void die(int ecode, const char *fmt, ...)
-{
-    va_list args;
-
-    va_start(args, fmt);
-    vfprintf(stdout, fmt, args);
-    va_end(args);
-    fprintf(stdout, "%s: exiting\n", TITLE);
-    exit(ecode);
-}
-
-int sendCmd(int sock, const char *cmd)
-{
-    int n;
-
-    if ((n = Xsend(sock, cmd,  strlen(cmd), 0)) < 0) {
-        Xclose(sock);
-         die(-1, "Unable to communicate with the server\n");
-    }
-
-    return n;
-}
-
-int receiveReply(int sock, char *reply, int size)
-{
-    int n;
-
-    // Receive (up to) size bytes from the socket, write to reply
-    if ((n = Xrecv(sock, reply, size, 0))  < 0) {
-        Xclose(sock);
-        die(-1, "Unable to communicate with the server\n");
-    }
-
-    // If the first 3 characters were not "OK:", die
-    if (strncmp(reply, "OK:", 3) != 0) {
-        die(-1, "%s\n", reply);
-    }
-
-    //Append null character
-    reply[n] = 0;
-
-    // Return number of bytes successfully received
-    return n;
-}
-
-
-int receiveNumberOfChunks(int sock)
-{
-	char* buffer = new char[REPLY_MAX_SIZE];
-	
-    // Receive (up to) size bytes from the socket, write to reply
-    if (Xrecv(sock, buffer, sizeof(buffer), 0)  < 0) {
-        Xclose(sock);
-        die(-1, "Unable to communicate with the server\n");
-    }
-
-	int numberOfChunks = atoi(buffer);
-	delete[] buffer;
-	return numberOfChunks;
-}
-
 
 
 int getFileData(int chunkSock, FILE *fd, char *chunks)
@@ -330,4 +258,86 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
 
     return numChunks;
 }
+
+
+
+
+
+
+
+void say(const char *fmt, ...)
+{
+    if (VERBOSE) {
+        va_list args;
+
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+    }
+}
+
+void die(int ecode, const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    vfprintf(stdout, fmt, args);
+    va_end(args);
+    fprintf(stdout, "%s: exiting\n", TITLE);
+    exit(ecode);
+}
+
+int sendCmd(int sock, const char *cmd)
+{
+    int n;
+
+    if ((n = Xsend(sock, cmd,  strlen(cmd), 0)) < 0) {
+        Xclose(sock);
+         die(-1, "Unable to communicate with the server\n");
+    }
+
+    return n;
+}
+
+int receiveReply(int sock, char *reply, int size)
+{
+    int n;
+
+    // Receive (up to) size bytes from the socket, write to reply
+    if ((n = Xrecv(sock, reply, size, 0))  < 0) {
+        Xclose(sock);
+        die(-1, "Unable to communicate with the server\n");
+    }
+
+    // If the first 3 characters were not "OK:", die
+    if (strncmp(reply, "OK:", 3) != 0) {
+        die(-1, "%s\n", reply);
+    }
+
+    //Append null character
+    reply[n] = 0;
+
+    // Return number of bytes successfully received
+    return n;
+}
+
+
+int receiveNumberOfChunks(int sock)
+{
+	char* buffer = new char[REPLY_MAX_SIZE];
+	
+    // Receive (up to) size bytes from the socket, write to reply
+    if (Xrecv(sock, buffer, sizeof(buffer), 0)  < 0) {
+        Xclose(sock);
+        die(-1, "Unable to communicate with the server\n");
+    }
+
+	int numberOfChunks = atoi(buffer);
+	delete[] buffer;
+	return numberOfChunks;
+}
+
+
+
+
 
