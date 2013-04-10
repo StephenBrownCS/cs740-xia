@@ -94,7 +94,6 @@ void *processRequest (void *socketid);
 
 int main(int argc, char *argv[])
 {
-    char *dag;
     int sock;
     char myAD[1024]; 
     char myHID[1024];   
@@ -114,7 +113,8 @@ int main(int argc, char *argv[])
 	struct addrinfo *ai;
 	if (Xgetaddrinfo(NULL, SID_VIDEO, NULL, &ai) < 0)
 		 die(-1, "Unable to create the local dag\n");
-	dag = (sockaddr_x*) ai->ai_addr;
+		
+	sockaddr_x* dag = (sockaddr_x*) ai->ai_addr;
 
 	// API Deprecation: No longer do this
     // read the localhost AD and HID
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
         say("\nListening...\n");
         
         int* acceptSock = new int();
-		if ((acceptSock = Xaccept(sock, NULL, NULL)) < 0)
+		if ((*acceptSock = Xaccept(sock, NULL, NULL)) < 0)
             die(-1, "accept failed\n");
 
         say("We have a new connection\n");
