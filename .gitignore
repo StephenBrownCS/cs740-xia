@@ -5,6 +5,9 @@
 *.lib
 *.a
 
+# Save files
+*.save
+
 # Shared objects (inc. Windows DLLs)
 *.dll
 *.so
@@ -15,3 +18,5 @@
 *.exe
 *.out
 *.app
+VideoClient
+VideoServer

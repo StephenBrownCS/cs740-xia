@@ -1,13 +1,14 @@
 include ../../xia-core/xia.mk
 
+# These lines are no longer Needed
 #CC=g++
 #CFLAGS=-I../../xia-core/api/xsocket
 #CFLAGS=-g
 #LDFLAGS =  -lprotobuf -lpthread
 #LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
-LDFLAGS += $(LIBS)
-
 #XIADIR = /home/xia/xia-core
+
+LDFLAGS += $(LIBS)
 
 all: VideoClient
 
@@ -29,5 +30,3 @@ VideoClient: VideoClient.cpp
 
 clean:
 	rm VideoClient
-
-
