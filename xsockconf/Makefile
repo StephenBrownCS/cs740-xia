@@ -18,24 +18,28 @@ bin.o:
 # start the network. This will not work if click is already started
 initiate.o:
 	$(XIA-CORE)/bin/xianet -s xia_video_topology.click start
-	$(XIA-CORE)/bin/xrouted router0 xroute_r0 &
-	$(XIA-CORE)/bin/xrouted router1 xroute_r1 &
-	$(XIA-CORE)/bin/xrouted router2 xroute_r2 &
-	$(XIA-CORE)/bin/xrouted router3 xroute_r3 &
+	sleep 4
+	$(XIA-CORE)/bin/xrouted router0 router0 &
+	$(XIA-CORE)/bin/xrouted router1 router1 &
+	$(XIA-CORE)/bin/xrouted router2 router2 &
+	$(XIA-CORE)/bin/xrouted router3 router3 &
 	sleep 2
-	$(XIA-CORE)/bin/xhcp_serverd xhcp_server_r0 &
-	$(XIA-CORE)/bin/xhcp_serverd xhcp_server_r1 &
-	$(XIA-CORE)/bin/xhcp_serverd xhcp_server_r2 &
-	$(XIA-CORE)/bin/xhcp_serverd xhcp_server_r3 &
+	$(XIA-CORE)/bin/xhcp_serverd router0 &
+	$(XIA-CORE)/bin/xhcp_serverd router1 &
+	$(XIA-CORE)/bin/xhcp_serverd router2 &
+	$(XIA-CORE)/bin/xhcp_serverd router3 &
 	sleep 2
-	$(XIA-CORE)/bin/xhcp_clientd www_h.host0.com.xia host0 xhcp_client_h0 &
-	$(XIA-CORE)/bin/xhcp_clientd www_h.host1.com.xia host1 xhcp_client_h1 &
-	$(XIA-CORE)/bin/xhcp_clientd www_h.host2.com.xia host2 xhcp_client_h2 &
-	$(XIA-CORE)/bin/xhcp_clientd www_h.host3.com.xia host3 xhcp_client_h3 &
+	$(XIA-CORE)/bin/xhcp_clientd www_h.host0.com.xia host0 host0 &
+	$(XIA-CORE)/bin/xhcp_clientd www_h.host1.com.xia host1 host1 &
+	$(XIA-CORE)/bin/xhcp_clientd www_h.host2.com.xia host2 host2 &
+	$(XIA-CORE)/bin/xhcp_clientd www_h.host3.com.xia host3 host3 &
+	$(XIA-CORE)/bin/xhcp_clientd www_h.host4.com.xia host4 host4 &
+	$(XIA-CORE)/bin/xhcp_clientd www_h.host5.com.xia host5 host5 &
 	sleep 2
 	$(XIA-CORE)/bin/xnameservice &
 	sleep 2
 	$(XIA-CORE)/bin/xianet check &
 	sleep 2
 
+#	$(XIA-CORE)/click/userlevel/click -R $(XIA-CORE)/etc/click/xia_video_topology.click &
 # TODO: add the client and server links once we know where they are going to be
