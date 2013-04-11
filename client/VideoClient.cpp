@@ -4,8 +4,11 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <iostream>
 #include "Xsocket.h"
 #include "dagaddr.hpp"
+
+using namespace std;
 
 #define VERSION "v1.0"
 #define TITLE "XIA Chunk File Client"
