@@ -181,9 +181,9 @@ void *processRequest (void *socketid)
     int acceptSock = *sock; 
     
 	
-	bool clientSignaledToClose = false;
+	//bool clientSignaledToClose = false;
 	
-	while(!clientSignaledToClose){
+	//while(!clientSignaledToClose){
     	char SIDReq[1024];
 	    memset(SIDReq, 0, sizeof(SIDReq));
         
@@ -241,7 +241,7 @@ void *processRequest (void *socketid)
 	        Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
 	        cout << "sending requested CID list: " << requestedCIDlist << endl;
 	    }
-	}
+	//}
     
     Xclose(acceptSock);
     delete sock;
