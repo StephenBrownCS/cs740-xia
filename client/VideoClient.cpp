@@ -118,6 +118,7 @@ int main(){
     // GET NUMBER OF CHUNKS
     // Receive the reply string
 	int numChunksInFile = receiveNumberOfChunks(sock);
+	cout << "Received number of chunks: " << numChunksInFile << endl;
 
     // Create chunk socket
     // We will use this to receive chunks
@@ -129,6 +130,7 @@ int main(){
     FILE *file = fopen(destFile, "w");
 
     // RECEIVE EACH CHUNK
+	cout << "Begin Chunk Transfer!" << endl;
     offset = 0;
     while (offset < numChunksInFile) {
         int numToReceive = CHUNK_WINDOW_SIZE;
@@ -137,11 +139,12 @@ int main(){
 
         // tell the server we want a list of <numToReceive> cids starting at location <offset>
         sprintf(cmd, "block %d:%d", offset, numToReceive);
+		cout << "Sending Chunk Request: " << cmd << endl;
         sendCmd(sock, cmd);
 
         char reply[REPLY_MAX_SIZE];
         receiveReply(sock, reply, sizeof(reply));
-        // Reply is of form: OK: <CID>
+		cout << "Received Reply: " << reply << endl;
         
         offset += CHUNK_WINDOW_SIZE;
 
