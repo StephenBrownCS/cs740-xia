@@ -177,65 +177,71 @@ int main(int argc, char *argv[])
 void *processRequest (void *socketid)
 {
     int n;
-    char SIDReq[1024];
     int *sock = (int*)socketid;
     int acceptSock = *sock; 
     
-    memset(SIDReq, 0, sizeof(SIDReq));
+	
+	bool clientSignaledToClose = false;
+	
+	while(!clientSignaledToClose){
+    	char SIDReq[1024];
+	    memset(SIDReq, 0, sizeof(SIDReq));
         
-    //Receive packet
-    say("Receiving packet...\n");
-    if ((n = Xrecv(acceptSock, SIDReq, sizeof(SIDReq), 0)) <= 0) {
-        cout << "Xrecv failed!" << endl;
-        Xclose(acceptSock);
-        delete sock;
-        pthread_exit(NULL);
-        return NULL;
-    }
+	    //Receive packet
+	    say("Receiving packet...\n");
+	    if ((n = Xrecv(acceptSock, SIDReq, sizeof(SIDReq), 0)) <= 0) {
+	        cout << "Xrecv failed!" << endl;
+	        Xclose(acceptSock);
+	        delete sock;
+	        pthread_exit(NULL);
+	        return NULL;
+	    }
         
-    string SIDReqStr(SIDReq);
-    cout << "Got request: " << SIDReqStr << endl;
-    // if the request is about number of chunks return number of chunks
-    // since this is first time, you would return along with header
-    int found = SIDReqStr.find("numchunks");
+	    string SIDReqStr(SIDReq);
+	    cout << "Got request: " << SIDReqStr << endl;
+	    // if the request is about number of chunks return number of chunks
+	    // since this is first time, you would return along with header
+	    int found = SIDReqStr.find("numchunks");
         
-    // If Request contains "numchunks", return number of CID's.
-    if(found != -1){
-        cout << " Request asks for number of chunks " << endl;
-        stringstream yy;
-        yy << CIDlist.size();
-        string cidlistlen = yy.str();
+	    // If Request contains "numchunks", return number of CID's.
+	    if(found != -1){
+	        cout << " Request asks for number of chunks " << endl;
+	        stringstream yy;
+	        yy << CIDlist.size();
+	        string cidlistlen = yy.str();
         
-        // Send back the number of CIDs
-		cout << "Sending back " << cidlistlen << endl;
-        Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
-    } 
-    else {
-        // Otherwise, if the request was not about the number of chunks,
-        // it must be a request for a certain chunk
+	        // Send back the number of CIDs
+			cout << "Sending back " << cidlistlen << endl;
+	        Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
+	    } 
+		// TODO: Add handling of a "Close Connection" Packet
+	    else {
+	        // Otherwise, if the request was not about the number of chunks,
+	        // it must be a request for a certain chunk
         
-        // Format of the request:   start-offset:end-offset
-        // Each offset position corresponds to a CID (chunk)
+	        // Format of the request:   start-offset:end-offset
+	        // Each offset position corresponds to a CID (chunk)
         
-        cout << "Request is for a certain chunk span" << endl;
+	        cout << "Request is for a certain chunk span" << endl;
         
-        // Parse the Request, extract start and end offsets
-        int findpos = SIDReqStr.find(":");
-        // split around this position
-        string str = SIDReqStr.substr(0, findpos);
-        int start_offset = atoi(str.c_str()); 
-        str = SIDReqStr.substr(findpos + 1);
-        int end_offset = atoi(str.c_str());
+	        // Parse the Request, extract start and end offsets
+	        int findpos = SIDReqStr.find(":");
+	        // split around this position
+	        string str = SIDReqStr.substr(0, findpos);
+	        int start_offset = atoi(str.c_str()); 
+	        str = SIDReqStr.substr(findpos + 1);
+	        int end_offset = atoi(str.c_str());
 
-        // construct the string from CIDlist
-        // return the list of CIDs, NOT including end_offset
-        string requestedCIDlist = "";
-        for(int i = start_offset; i < end_offset; i++){
-            requestedCIDlist += CIDlist[i] + " ";
-        }       
-        Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
-        cout << "sending requested CID list: " << requestedCIDlist << endl;
-    }
+	        // construct the string from CIDlist
+	        // return the list of CIDs, NOT including end_offset
+	        string requestedCIDlist = "";
+	        for(int i = start_offset; i < end_offset; i++){
+	            requestedCIDlist += CIDlist[i] + " ";
+	        }       
+	        Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
+	        cout << "sending requested CID list: " << requestedCIDlist << endl;
+	    }
+	}
     
     Xclose(acceptSock);
     delete sock;

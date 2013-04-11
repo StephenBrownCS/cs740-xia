@@ -117,6 +117,7 @@ int main(){
     // send the request for the number of chunks
     sprintf(cmd, "get %s",  "numchunks");
     sendCmd(sock, cmd);
+	
 
     // GET NUMBER OF CHUNKS
     // Receive the reply string
