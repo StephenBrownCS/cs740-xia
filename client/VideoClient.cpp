@@ -72,7 +72,6 @@ int main(){
 
     // Get the DAG for the Server
     
-    // I have no idea what sock_addr is used for... it was added in the API update
     sockaddr_x server_dag;
     socklen_t dag_length = sizeof(server_dag);
     if (XgetDAGbyName(SERVER_NAME, &server_dag, &dag_length) < 0){
@@ -115,6 +114,7 @@ int main(){
 	*p = 0;
 
     // send the request for the number of chunks
+	cout << "Sending request for number of chunks" << endl;
     sprintf(cmd, "get %s",  "numchunks");
     sendCmd(sock, cmd);
 	
