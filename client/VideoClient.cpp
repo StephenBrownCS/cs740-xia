@@ -202,14 +202,14 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     }
     
     // Add the last chunk CID onto the end of the CID chunkStatus list
-    {
-        char* dag = (char *) malloc(512);
-        sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
-        //printf("getting %s\n", chunk_ptr);
-        chunkStatuses[numChunks].cidLen = strlen(dag);
-        chunkStatuses[numChunks].cid = dag;
-        numChunks++;
-    }
+    // {
+    //     char* dag = (char *) malloc(512);
+    //     sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
+    //     //printf("getting %s\n", chunk_ptr);
+    //     chunkStatuses[numChunks].cidLen = strlen(dag);
+    //     chunkStatuses[numChunks].cid = dag;
+    //     numChunks++;
+    // }
 
 
     // BRING LIST OF CHUNKS LOCAL
