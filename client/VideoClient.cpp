@@ -183,7 +183,7 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     // Number of chunks in the CID List that we assemble
     int numChunks = 0;
     
-
+	cout << "Getting File Data" << endl;
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     char* next = NULL;
     while ((next = strchr(chunk_ptr, ' '))) {
@@ -318,9 +318,9 @@ int receiveReply(int sock, char *reply, int size)
     }
 
     // If the first 3 characters were not "OK:", die
-    if (strncmp(reply, "OK:", 3) != 0) {
-        die(-1, "%s\n", reply);
-    }
+    // if (strncmp(reply, "OK:", 3) != 0) {
+    //     die(-1, "%s\n", reply);
+    // }
 
     //Append null character
     reply[n] = 0;
