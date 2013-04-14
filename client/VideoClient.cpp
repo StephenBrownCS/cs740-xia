@@ -15,7 +15,7 @@ using namespace std;
 #define SERVER_NAME "www_s.video.com.xia"
 
 //TODO: WHY IS THIS ALWAYS 10??????
-const int CHUNK_WINDOW_SIZE = 10;
+const int CHUNK_WINDOW_SIZE = 1;
 
 //TODO: WHY?
 const int REPLY_MAX_SIZE = 512;
