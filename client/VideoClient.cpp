@@ -49,7 +49,7 @@ int receiveNumberOfChunks(int sock);
 
 int getFileData(int chunkSock, FILE *fd, char *chunks);
 
-void printChunkStatuses(ChunkStatus* chunkStatuses);
+void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
 
 
 // ***************************************************************************
@@ -224,7 +224,7 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     say("checking chunk status\n");
     while (1) {
         int status = XgetChunkStatuses(chunkSock, chunkStatuses, numChunks);
-		printChunkStatuses(chunkStatuses);
+		printChunkStatuses(chunkStatuses, numChunks);
 
         if (status == READY_TO_READ){
             break;
@@ -348,9 +348,9 @@ int receiveNumberOfChunks(int sock)
 }
 
 
-void printChunkStatuses(ChunkStatus* chunkStatuses){
+void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks){
 	ChunkStatus* curChunkStatus = chunkStatuses;
-	while(curChunkStatus){
+	for(int i = 0; i < numChunks; i++){
 		cout << curChunkStatus->cid << ": " << curChunkStatus->status << endl;
 		curChunkStatus++;
 	}
