@@ -6,8 +6,8 @@ host0 :: XIAEndHost (RE AD0 HID0, HID0, 1500, 0, aa:aa:aa:aa:aa:aa);
 host1 :: XIAEndHost (RE AD1 HID1, HID1, 1600, 1, aa:aa:aa:aa:aa:aa);
 host2 :: XIAEndHost (RE AD2 HID2, HID2, 1700, 2, aa:aa:aa:aa:aa:aa);
 host3 :: XIAEndHost (RE AD3 HID3, HID3, 1800, 3, aa:aa:aa:aa:aa:aa);
-host4 :: XIAEndHost (RE AD0 HID4, HID2, 2300, 4, aa:aa:aa:aa:aa:aa);
-host5 :: XIAEndHost (RE AD1 HID5, HID3, 2400, 5, aa:aa:aa:aa:aa:aa);
+host4 :: XIAEndHost (RE AD0 HID4, HID4, 2300, 4, aa:aa:aa:aa:aa:aa);
+host5 :: XIAEndHost (RE AD1 HID5, HID5, 2400, 5, aa:aa:aa:aa:aa:aa);
 
 router0 :: XIARouter4Port(RE AD0 RHID0, AD0, RHID0, 0.0.0.0, 1900, aa:aa:aa:aa:aa:aa, aa:aa:aa:aa:aa:aa, aa:aa:aa:aa:aa:aa, aa:aa:aa:aa:aa:aa);
 router1 :: XIARouter4Port(RE AD1 RHID1, AD1, RHID1, 0.0.0.0, 2000, aa:aa:aa:aa:aa:aa, aa:aa:aa:aa:aa:aa, aa:aa:aa:aa:aa:aa, aa:aa:aa:aa:aa:aa);
@@ -51,7 +51,7 @@ ControlSocket(tcp, 7777);
 //	|
 //	AD0----AD1-----AD2
 //	|	|	|
-//	R0	R1	R2
-//	|	|	|
-//	H0	H1	H2
+//	R0	R1 	R2
+//	|  |	|  |	|
+//	H0 H4	H1 H5	H2
 
