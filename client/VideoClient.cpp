@@ -14,6 +14,9 @@ using namespace std;
 #define TITLE "XIA Chunk File Client"
 #define SERVER_NAME "www_s.video.com.xia"
 
+// TODO: THIS IS NOT THE ONLY PLACE WHERE THESE CONSTANTS ARE MADE
+// NEED TO CREATE SEPARATE CONSTANTS OR CONFIG FILE
+
 //TODO: WHY IS THIS ALWAYS 10??????
 const int CHUNK_WINDOW_SIZE = 1;
 
@@ -134,14 +137,12 @@ int main(){
     if ((chunkSock = Xsocket(AF_XIA, XSOCK_CHUNK, 0)) < 0)
         die(-1, "unable to create chunk socket\n");
 
-    // Open a file for writing
-    // TODO: Get rid of this
-    FILE *file = fopen(destFile, "w");
-
-    // RECEIVE EACH CHUNK
+    // Continue until we have received the entire file
 	cout << "Begin Chunk Transfer!" << endl;
     offset = 0;
     while (offset < numChunksInFile) {
+		// GET LIST OF CIDs FROM SERVER
+		// Determine how many chunks to ask for
         int numToReceive = CHUNK_WINDOW_SIZE;
         if (numChunksInFile - offset < numToReceive)
             numToReceive = numChunksInFile - offset;
@@ -151,22 +152,21 @@ int main(){
 		cout << "Sending Chunk Request: " << cmd << endl;
         sendCmd(sock, cmd);
 
+		// Server replies with "OK: " followed by a list of CIDs
         char reply[REPLY_MAX_SIZE];
         receiveReply(sock, reply, sizeof(reply));
 		cout << "Received Reply: " << reply << endl;
         
         offset += CHUNK_WINDOW_SIZE;
 
-        // TODO: Instead of write to file, we will want to do something 
-        // with each video chunk
-        if (getFileData(chunkSock, file, &reply[4]) < 0) {
+		// GET THE ACTUAL CHUNK DATA FOR THE LIST OF CHUNK CIDs WE RECEIVED
+		// Reply starts at the 4th byte, since it starts with "OK: "
+		// TODO: Check that we didn't get rid of the "OK: " **********************************
+        if (getChunkData(chunkSock, &reply[4]) < 0) {
             status= -1;
             break;
         }
     }
-    
-    // TODO: Eventually get rid of this
-    fclose(file);
 
     if (status < 0) {
         unlink(srcFile);
@@ -180,10 +180,10 @@ int main(){
 }
 
 
-int getFileData(int chunkSock, FILE *fd, char *chunks)
+int getChunkData(int chunkSock, char* listOfChunkCIDs)
 {
     ChunkStatus chunkStatuses[CHUNK_WINDOW_SIZE];
-    char *chunk_ptr = chunks;
+    char *chunk_ptr = listOfChunkCIDs;
     
     // Number of chunks in the CID List that we assemble
     int numChunks = 0;
@@ -194,6 +194,7 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     while ((next = strchr(chunk_ptr, ' '))) {
         *next = 0;
 
+		// Create a dag by using the CID pointed to by chunk_ptr
         char* dag = (char *)malloc(512);
         sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
@@ -261,10 +262,6 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
             say("error getting chunk\n");
             return -1;
         }
-
-        // write the chunåk to disk
-        //say("writing %d bytes of chunk %s to disk\n", len, cid);
-        fwrite(data, 1, len, fd);
 
         free(chunkStatuses[i].cid);
         chunkStatuses[i].cid = NULL;
