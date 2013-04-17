@@ -33,6 +33,7 @@ XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile, const c
 
 	currentChunk = NULL;
 	bytesReadByLastOperation = 0;
+	numBytesReadFromCurrentChunk = 0;
 	
 	this->numChunksInFile = numChunksInFile;
 	nextChunkToRequest = 0;
@@ -66,17 +67,23 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 	while(bytesReadByLastOperation < numBytesRequested){
 		
 		// If current chunk is all used up, move to next chunk
-		if(numBytesReadFromCurrentChunk >= XIA_MAXCHUNK || 
-			!currentChunk[numBytesReadFromCurrentChunk]){
+		if(numBytesReadFromCurrentChunk >= XIA_MAXCHUNK){ // I don't think Chunks are NULL Terminated
 			delete currentChunk;
+			
+			// If Chunk Queue is empty, go fetch some more chunks
+			if(chunkQueue.isEmpty()){
+				char* listOfChunkCIDs = retrieveCIDs();
+				readChunkData(listOfChunkCIDs);
+			}
+			
+			// Get the next chunk
 			currentChunk = chunkQueue.front();
 			chunkQueue.pop();
 			numBytesReadFromCurrentChunk = 0;
 		}
 		
 		// copy bytes from the current chunk into buffer
-		while(numBytesReadFromCurrentChunk < XIA_MAXCHUNK && 
-				currentChunk[numBytesReadFromCurrentChunk]){
+		while(numBytesReadFromCurrentChunk < XIA_MAXCHUNK){
 			*buffer++ = currentChunk[numBytesReadFromCurrentChunk++];
 			bytesReadByLastOperation++;
 		}
