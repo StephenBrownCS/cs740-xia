@@ -34,7 +34,7 @@ using namespace std;
 
 //GLOBAL CONFIGURATION OPTIONS
 int VERBOSE = 1;
-string VIDEO_NAME;
+string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
 
 // Container of CIDs
 vector<string> CIDlist;
@@ -110,47 +110,23 @@ int main(int argc, char *argv[])
          die(-1, "Unable to create the listening socket\n");
      }
 
-	struct addrinfo *ai;
-	if (Xgetaddrinfo(NULL, SID_VIDEO, NULL, &ai) < 0)
+	struct addrinfo *addrInfo;
+	if (Xgetaddrinfo(NULL, SID_VIDEO, NULL, &addrInfo) < 0)
 		 die(-1, "Unable to create the local dag\n");
 		
-	sockaddr_x* dag = (sockaddr_x*) ai->ai_addr;
+	sockaddr_x* dag = (sockaddr_x*) addrInfo->ai_addr;
 
-	// API Deprecation: No longer do this
-    // read the localhost AD and HID
-    // stores what it finds into myAD and myHID
-    // if ( XreadLocalHostAddr(sock, myAD, sizeof(myAD), myHID, sizeof(myHID)) < 0 ){
-    //     error("Reading localhost address");      
-    // }
-
-	// API Deprecation
-    // create the dag we will listen for incoming connections on
-    // if (!(dag = createDAG(myAD, myHID, SID_VIDEO))){
-    //     die(-1, "Unable to create DAG: %s\n", dag); 
-    // }
-
-	// Old Way
-    // register this service name to the name server 
-    // char * sname = (char*) malloc(snprintf(NULL, 0, "%s", SNAME) + 1);
-    // sprintf(sname, "%s", SNAME);    
-    // if (XregisterName(sname, dag) < 0 ){
-    //     error("name register");        
-    // }
-
-	// New Way
 	// register this service name to the name server 
     if (XregisterName(SNAME, dag) < 0 )
 		perror("name register");    
 
-
-	// New Way
     // Bind our socket to the dag
 	if(Xbind(sock, (struct sockaddr*)dag, sizeof(sockaddr_x)) < 0){
 		 die(-1, "Unable to bind to the dag: %s\n", dag);
 	}
 
 	// we're done with this
-	Xfreeaddrinfo(ai);
+	Xfreeaddrinfo(addrInfo);
 	dag = NULL;
 
     while (1) {
@@ -286,8 +262,7 @@ void getConfig(int argc, char** argv)
     //    help(basename(argv[0]));
 
     //VIDEO_NAME = argv[optind];
-    //HARD-CODED
-    VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
+    //HARD-CODED SO NO LONGER USED *****
 }
 
 

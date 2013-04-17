@@ -40,16 +40,31 @@ void die(int ecode, const char *fmt, ...);
 
 int sendCmd(int sock, const char *cmd);
 
-int receiveReply(int sock, char *reply, int sz);
+/**
+ * Receive reply from the server
+ *
+*/
+int receiveReply(int sock, char *reply, int size);
 
 /*
 ** Receive number of chunks
 */
 int receiveNumberOfChunks(int sock);
 
+/**
+ * Build a ChunkStatus list
+ * Request the chunks and bring them local
+ * Read the chunks into the program and write them out to a file
+*/
 int getFileData(int chunkSock, FILE *fd, char *chunks);
 
+/**
+ * Useful for debugging: prints the CID and status of each chunkStatus
+ *
+*/
 void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
+
+
 
 
 // ***************************************************************************
@@ -90,17 +105,6 @@ int main(){
          die(-1, "Unable to bind to the dag: %s\n", server_dag);
     }
 
-    // OLD WAY
-    /*
-    SERVER_AD = strchr(dag, ' ') + 1;
-    p = strchr(SERVER_AD, ' ');
-    *p = 0;
-    SERVER_HID = p + 1;
-    p = strchr(SERVER_HID, ' ');
-    *p = 0;
-    */
-
-	// NEW WAY
 	// save the AD and HID for later. This seems hacky
 	// we need to find a better way to deal with this
 	Graph g(&server_dag);
@@ -153,7 +157,7 @@ int main(){
         
         offset += CHUNK_WINDOW_SIZE;
 
-        // TODO: Instead of getFileData, we will want to do something 
+        // TODO: Instead of write to file, we will want to do something 
         // with each video chunk
         if (getFileData(chunkSock, file, &reply[4]) < 0) {
             status= -1;
@@ -161,7 +165,7 @@ int main(){
         }
     }
     
-    // TODO: Get rid of this
+    // TODO: Eventually get rid of this
     fclose(file);
 
     if (status < 0) {
@@ -202,6 +206,7 @@ int getFileData(int chunkSock, FILE *fd, char *chunks)
     }
     
     // Add the last chunk CID onto the end of the CID chunkStatus list
+	// Commented this out since it was causing 11 things to get requested when should be 10
     // {
     //     char* dag = (char *) malloc(512);
     //     sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
