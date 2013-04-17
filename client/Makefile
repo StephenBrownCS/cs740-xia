@@ -10,10 +10,13 @@ include ../../xia-core/xia.mk
 
 LDFLAGS += $(LIBS)
 
-all: VideoClient
+all: VideoClient XChunkSocketStream
 
 VideoClient: VideoClient.cpp
 	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp $(LDFLAGS)
+
+XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h
+	g++ -Wall -Wextra $(CFLAGS) -o $@ XChunkSocketStream.cpp $(LDFLAGS)
 
 #libXsocket.a:
 #	ln -s ../../xia-core/api/xsocket/libXsocket.a .

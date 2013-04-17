@@ -55,8 +55,8 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 	
 	// num bytes ready is bytes remaining from current chunk + 
 	// num bytes in the chunk queue
-	int numBytesReady = ( XIA_MAX_CHUNK - numBytesReadFromCurrentChunk ) + 
-						XIA_MAX_CHUNK * chunkQueue.size();
+	int numBytesReady = ( XIA_MAXCHUNK - numBytesReadFromCurrentChunk ) + 
+						XIA_MAXCHUNK * chunkQueue.size();
 	if( numBytesReady < (int)numBytesRequested){
 		char* listOfChunkCIDs = retrieveCIDs();
 		readChunkData(listOfChunkCIDs);
@@ -66,7 +66,7 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 	while(bytesReadByLastOperation < numBytesRequested){
 		
 		// If current chunk is all used up, move to next chunk
-		if(numBytesReadFromCurrentChunk >= XIA_MAX_CHUNK || 
+		if(numBytesReadFromCurrentChunk >= XIA_MAXCHUNK || 
 			!currentChunk[numBytesReadFromCurrentChunk]){
 			delete currentChunk;
 			currentChunk = chunkQueue.front();
@@ -75,12 +75,13 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 		}
 		
 		// copy bytes from the current chunk into buffer
-		while(numBytesReadFromCurrentChunk < XIA_MAX_CHUNK && 
+		while(numBytesReadFromCurrentChunk < XIA_MAXCHUNK && 
 				currentChunk[numBytesReadFromCurrentChunk]){
 			*buffer++ = currentChunk[numBytesReadFromCurrentChunk++];
 			bytesReadByLastOperation++;
 		}
 	}
+	return *this;
 }
 
 
@@ -187,7 +188,7 @@ int XChunkSocketStream::readChunkData(char* listOfChunkCIDs){
         cid++;
 		cout << "reading chunk " << cid << endl;
         
-		char* chunkData = new char[XIA_MAX_CHUNK];
+		char* chunkData = new char[XIA_MAXCHUNK];
 
         // Receive the chunk, and write into data buffer
         int len = 0;
@@ -228,7 +229,7 @@ int XChunkSocketStream::receiveReply(char *reply, int size)
     // Receive (up to) size bytes from the socket, write to reply
     if ((n = Xrecv(xSocket, reply, size, 0))  < 0) {
         Xclose(xSocket);
-		cerr << "Unable to communicate with the server\n") << endl;
+		cerr << "Unable to communicate with the server" << endl;
 		exit(-1);
     }
 
