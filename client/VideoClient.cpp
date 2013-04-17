@@ -127,11 +127,17 @@ int main(){
 	int numChunksInFile = receiveNumberOfChunks(sock);
 	cout << "Received number of chunks: " << numChunksInFile << endl;
 
-    // Create chunk socket
+	XChunkSocketStream chunkSocketStream(sock, numChunksInFile, SERVER_AD, SERVER_HID);
+	PloggOggDecoder oggDecoder;
+	oggDecoder.play(chunkSocketStream);
+
+
+	/*
+	// Create chunk socket
     // We will use this to receive chunks
     if ((chunkSock = Xsocket(AF_XIA, XSOCK_CHUNK, 0)) < 0)
         die(-1, "unable to create chunk socket\n");
-
+	
     // Continue until we have received the entire file
 	cout << "Begin Chunk Transfer!" << endl;
     offset = 0;
@@ -166,11 +172,12 @@ int main(){
     if (status < 0) {
         unlink(srcFile);
     }
+	*/
 
     say("shutting down\n");
     sendCmd(sock, "done");
     Xclose(sock);
-    Xclose(chunkSock);
+    //Xclose(chunkSock);
     return status;
 }
 

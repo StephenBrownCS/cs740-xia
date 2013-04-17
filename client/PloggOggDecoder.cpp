@@ -125,7 +125,7 @@ void VorbisDecode::initForData(OggStream* stream) {
 
 
 
-OggDecoder::OggDecoder() :
+PloggOggDecoder::PloggOggDecoder() :
   mSurface(0),
   mOverlay(0),
   mAudio(0),
@@ -133,7 +133,7 @@ OggDecoder::OggDecoder() :
 {
 }
 
-OggDecoder::~OggDecoder() {
+PloggOggDecoder::~PloggOggDecoder() {
   if (mAudio) {
     sa_stream_drain(mAudio);
     sa_stream_destroy(mAudio);
@@ -145,7 +145,7 @@ OggDecoder::~OggDecoder() {
 }
 
 
-void OggDecoder::play(istream& is) {
+void PloggOggDecoder::play(istream& is) {
   ogg_sync_state state;
 
   int ret = ogg_sync_init(&state);
@@ -296,7 +296,7 @@ void OggDecoder::play(istream& is) {
 
 
 
-bool OggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page* page) {
+bool PloggOggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page* page) {
   int ret = 0;
 
   // If we've hit end of file we still need to continue processing
@@ -327,7 +327,7 @@ bool OggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page* pag
   return true;
 }
 
-bool OggDecoder::read_packet(istream& is, ogg_sync_state* state, OggStream* stream, ogg_packet* packet) {
+bool PloggOggDecoder::read_packet(istream& is, ogg_sync_state* state, OggStream* stream, ogg_packet* packet) {
   int ret = 0;
 
   while ((ret = ogg_stream_packetout(&stream->mState, packet)) != 1) {
@@ -348,7 +348,7 @@ bool OggDecoder::read_packet(istream& is, ogg_sync_state* state, OggStream* stre
   return true;
 }
 
-void OggDecoder::read_headers(istream& stream, ogg_sync_state* state) {
+void PloggOggDecoder::read_headers(istream& stream, ogg_sync_state* state) {
   ogg_page page;
 
   bool headersDone = false;
@@ -397,7 +397,7 @@ void OggDecoder::read_headers(istream& stream, ogg_sync_state* state) {
 }
 
 
-bool OggDecoder::handle_theora_header(OggStream* stream, ogg_packet* packet) {
+bool PloggOggDecoder::handle_theora_header(OggStream* stream, ogg_packet* packet) {
   int ret = th_decode_headerin(&stream->mTheora.mInfo,
 			       &stream->mTheora.mComment,
 			       &stream->mTheora.mSetup,
@@ -419,7 +419,7 @@ bool OggDecoder::handle_theora_header(OggStream* stream, ogg_packet* packet) {
   return true;
 }
 
-void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
+void PloggOggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
   // The granulepos for a packet gives the time of the end of the
   // display interval of the frame in the packet.  We keep the
   // granulepos of the frame we've decoded and use this to know the
@@ -491,7 +491,7 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
   }
 }
 
-bool OggDecoder::handle_vorbis_header(OggStream* stream, ogg_packet* packet) {
+bool PloggOggDecoder::handle_vorbis_header(OggStream* stream, ogg_packet* packet) {
   int ret = vorbis_synthesis_headerin(&stream->mVorbis.mInfo,
 				      &stream->mVorbis.mComment,
 				      packet);
@@ -522,7 +522,7 @@ int main(int argc, char* argv[]) {
 
   ifstream file(argv[1], ios::in | ios::binary);
   if (file) {
-    OggDecoder decoder;
+    PloggOggDecoder decoder;
     decoder.play(file);
     file.close();
     for(StreamMap::iterator it = decoder.mStreams.begin();

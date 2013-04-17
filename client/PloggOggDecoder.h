@@ -31,21 +31,17 @@
 #include <ogg/ogg.h> // for ogg_int64_t
 
 extern "C" {
-#include <sydney_audio.h>
+	#include <sydney_audio.h>
 }
 
 // Forward References
 class OggStream;
 class SDL_Surface;
 class SDL_Overlay;
-//class sa_stream_t;
-//class ogg_packet;
-//class ogg_sync_state;
 
 typedef std::map<int, OggStream*> StreamMap; 
 
-class OggDecoder
-{
+class PloggOggDecoder{
 public:
   StreamMap mStreams;  
   SDL_Surface* mSurface;
@@ -54,8 +50,8 @@ public:
   ogg_int64_t  mGranulepos;
 
 public:
-	OggDecoder();
-	~OggDecoder();
+	PloggOggDecoder();
+	~PloggOggDecoder();
   	void play(std::istream& stream);
 
 private:
