@@ -127,6 +127,7 @@ int main(){
 	int numChunksInFile = receiveNumberOfChunks(sock);
 	cout << "Received number of chunks: " << numChunksInFile << endl;
 
+
 	XChunkSocketStream chunkSocketStream(sock, numChunksInFile, SERVER_AD, SERVER_HID);
 	PloggOggDecoder oggDecoder;
 	oggDecoder.play(chunkSocketStream);
@@ -149,7 +150,7 @@ int main(){
             numToReceive = numChunksInFile - offset;
 
         // tell the server we want a list of <numToReceive> cids starting at location <offset>
-        sprintf(cmd, "block %d:%d", offset, numToReceive);
+        sprintf(cmd, "block %d:%d", offset, offset + numToReceive);
 		cout << "Sending Chunk Request: " << cmd << endl;
         sendCmd(sock, cmd);
 
@@ -262,6 +263,7 @@ int getChunkData(int chunkSock, char* listOfChunkCIDs)
         int len = 0;
         if ((len = XreadChunk(chunkSock, data, sizeof(data), 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
             say("error getting chunk\n");
+	    exit(-1);
             return -1;
         }
 

@@ -216,7 +216,7 @@ int XChunkSocketStream::readChunkData(char* listOfChunkCIDs){
 
         // Receive the chunk, and write into data buffer
         int len = 0;
-        if ((len = XreadChunk(chunkSock, chunkData, sizeof(chunkData), 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
+        if ((len = XreadChunk(chunkSock, chunkData, XIA_MAXCHUNK, 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
 			cout << "error getting chunk\n";
 	    delete chunkData;
             return -1;
