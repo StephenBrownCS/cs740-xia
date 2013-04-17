@@ -8,6 +8,7 @@ include ../../xia-core/xia.mk
 #LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
 #XIADIR = /home/xia/xia-core
 
+LIBS += -lsydneyaudio -lvorbis -ltheoradec -logg -lSDL
 
 ifeq "$(UNAME)" "Linux"
 INCLUDE=
@@ -24,16 +25,16 @@ LDFLAGS += $(LIBS)
 all: VideoClient XChunkSocketStream
 
 VideoClient: VideoClient.cpp Utility XChunkSocketStream
-	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp $(LDFLAGS)
+	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp Utility.o XChunkSocketStream.o PloggOggDecoder.o $(LDFLAGS)
 
 Utility: Utility.h Utility.cpp
-	g++ -Wall -Wextra $(CFLAGS) Utility.cpp $(LDFLAGS)
+	g++ -Wall -Wextra $(CFLAGS) -c Utility.cpp $(LDFLAGS)
 
 XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h PloggOggDecoder Utility
-	g++ -Wall -Wextra $(CFLAGS) -o $@ XChunkSocketStream.cpp PloggOggDecoder.cpp $(LDFLAGS)
+	g++ -Wall -Wextra $(CFLAGS) -c XChunkSocketStream.cpp PloggOggDecoder.cpp $(LDFLAGS)
 
 PloggOggDecoder: PloggOggDecoder.cpp PloggOggDecoder.h
-	g++ -g -I/opt/local/include -L/opt/local/lib -c $(INCLUDE) -lsydneyaudio -lvorbis -ltheoradec -logg -lSDL -o PloggOggDecoder.o PloggOggDecoder.cpp
+	g++ -g -I/opt/local/include -L/opt/local/lib -c $(INCLUDE) -o PloggOggDecoder.o PloggOggDecoder.cpp $(LDFLAGS)
 
 clean:
-	rm VideoClient
+	rm VideoClient *.o *~

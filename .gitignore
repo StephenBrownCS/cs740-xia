@@ -8,6 +8,9 @@
 # Save files
 *.save
 
+# Temporary Files
+*~
+
 # Shared objects (inc. Windows DLLs)
 *.dll
 *.so

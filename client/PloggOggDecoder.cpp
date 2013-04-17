@@ -91,13 +91,6 @@ public:
   }
 };
 
-OggStream::OggStream(int serial = -1) : 
-  mSerial(serial),
-  mType(TYPE_UNKNOWN),
-  mActive(true)
-{ 
-}
-
 
 
 void TheoraDecode::initForData(OggStream* stream) {
@@ -520,6 +513,7 @@ void usage() {
   cout << "Usage: plogg <filename>" << endl;
 }
 
+/*
 int main(int argc, char* argv[]) {
   if (argc != 2) { 
     usage();
@@ -541,6 +535,8 @@ int main(int argc, char* argv[]) {
   SDL_Quit();
   return 0;
 }
+*/
+
 // Copyright (C) 2009 Chris Double. All Rights Reserved.
 // The original author of this code can be contacted at: chris.double@double.co.nz
 // 

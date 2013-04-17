@@ -1,9 +1,15 @@
 #include <iostream>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
 #include "Utility.h"
 
 using namespace std;
 
-static void say(const char *fmt, ...)
+const bool VERBOSE = true;
+const char* const TITLE = "";
+
+void say(const char *fmt, ...)
 {
     if (VERBOSE) {
         va_list args;
@@ -14,7 +20,7 @@ static void say(const char *fmt, ...)
     }
 }
 
-static void die(int ecode, const char *fmt, ...)
+void die(int ecode, const char *fmt, ...)
 {
     va_list args;
 

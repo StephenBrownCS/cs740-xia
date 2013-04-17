@@ -27,17 +27,22 @@
 #define __PLOG_OGG_DECODER_H__
 
 #include<istream>
+#include<map>
 #include <ogg/ogg.h> // for ogg_int64_t
+
+extern "C" {
+#include <sydney_audio.h>
+}
 
 // Forward References
 class OggStream;
 class SDL_Surface;
 class SDL_Overlay;
-class sa_stream_t;
-class ogg_packet;
-class ogg_sync_state;
+//class sa_stream_t;
+//class ogg_packet;
+//class ogg_sync_state;
 
-typedef map<int, OggStream*> StreamMap; 
+typedef std::map<int, OggStream*> StreamMap; 
 
 class OggDecoder
 {
@@ -56,7 +61,7 @@ public:
 private:
   bool handle_theora_header(OggStream* stream, ogg_packet* packet);
   bool handle_vorbis_header(OggStream* stream, ogg_packet* packet);
-  void read_headers(istream& stream, ogg_sync_state* state);
+  void read_headers(std::istream& stream, ogg_sync_state* state);
 
   bool read_page(std::istream& stream, ogg_sync_state* state, ogg_page* page);
   bool read_packet(std::istream& is, ogg_sync_state* state, OggStream* stream, ogg_packet* packet);

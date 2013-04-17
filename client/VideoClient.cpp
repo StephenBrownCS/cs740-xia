@@ -9,7 +9,7 @@
 #include "dagaddr.hpp"
 #include "Utility.h"
 #include "XChunkSocketStream.h"
-#include "Plogg.h"
+#include "PloggOggDecoder.h"
 
 using namespace std;
 
@@ -54,7 +54,7 @@ int receiveNumberOfChunks(int sock);
  * Request the chunks and bring them local
  * Read the chunks into the program and write them out to a file
 */
-int getFileData(int chunkSock, FILE *fd, char *chunks);
+int getChunkData(int chunkSock, char *chunks);
 
 /**
  * Useful for debugging: prints the CID and status of each chunkStatus
