@@ -1,0 +1,46 @@
+plogg
+=====
+
+This is an example of using the libogg api to read and
+decode Ogg files.
+
+It is hosted on github at:
+
+  http://github.com/doublec/plogg/tree
+
+For more information see this weblog posts:
+
+  http://www.bluishcoder.co.nz/2009/06/reading-ogg-files-using-libogg.html
+  http://www.bluishcoder.co.nz/2009/06/decoding-theora-files-using-libtheora.html
+  http://www.bluishcoder.co.nz/2009/06/decoding-vorbis-files-with-libvorbis.html
+  http://www.bluishcoder.co.nz/2009/06/playing-ogg-files-with-audio-and-video.html
+
+The following branches are available in the repository:
+
+  master       - Combined parts to make a usable player
+  part1_ogg    - Reads Ogg files but doesn't decode
+  part2_theora - Extends part 1 to decode and display theora
+  part3_vorbis - Extends part 1 to decode and play vorbis
+  part4_avsync - Combines part 2 and 3 to play videos 
+                 with synchronised audio and video.  
+
+You will need the following third party libraries to build:
+
+  - boost
+  - SDL
+  - libogg
+  - libtheora
+  - libvorbis
+  - libsydneyaudio
+
+To build:
+
+  $ git clone git://github.com/doublec/plogg.git
+  $ cd plogg
+  $ make
+
+Links to Ogg documentation:
+
+  libogg         - http://www.xiph.org/ogg/doc/libogg/
+  libtheora      - http://theora.org/doc/libtheora-1.1/
+  libvorbis      - http://xiph.org/vorbis/doc/
