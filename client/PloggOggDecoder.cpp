@@ -11,6 +11,7 @@
 #include <vorbis/codec.h>
 #include <SDL/SDL.h>
 #include "PloggOggDecoder.h"
+#include "XChunkSocketStream.h"
 
 extern "C" {
 #include <sydney_audio.h>
@@ -299,9 +300,11 @@ void PloggOggDecoder::play(istream& is) {
 bool PloggOggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page* page) {
   int ret = 0;
 
+  XChunkSocketStream & xStream = dynamic_cast<XChunkSocketStream &>(stream);
+
   // If we've hit end of file we still need to continue processing
   // any remaining pages that we've got buffered.
-  if (!stream.good())
+  if (!xStream.good())
     return ogg_sync_pageout(state, page) == 1;
 
   while((ret = ogg_sync_pageout(state, page)) != 1) {
@@ -312,8 +315,8 @@ bool PloggOggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page
     assert(buffer);
 
     // Read from the file into the buffer
-    stream.read(buffer, 4096);
-    int bytes = stream.gcount();
+    xStream.read(buffer, 4096);
+    int bytes = xStream.gcount();
     if (bytes == 0) {
       // End of file. 
       continue;

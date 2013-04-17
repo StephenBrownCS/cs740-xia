@@ -38,6 +38,9 @@ public:
 	 *
 	*/
 	int gcount();
+
+	//Overridden
+	bool good();
 	
 	/** Overridden method of istream
 	 * Reads up to numBytesRequested bytes into the buffer

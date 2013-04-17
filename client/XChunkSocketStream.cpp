@@ -46,6 +46,11 @@ int XChunkSocketStream::gcount(){
 }
 
 
+bool XChunkSocketStream::good(){
+	return true;
+}
+
+
 
 istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 	bytesReadByLastOperation = 0;
@@ -56,11 +61,20 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 	
 	// num bytes ready is bytes remaining from current chunk + 
 	// num bytes in the chunk queue
-	int numBytesReady = ( XIA_MAXCHUNK - numBytesReadFromCurrentChunk ) + 
-						XIA_MAXCHUNK * chunkQueue.size();
+	int numBytesReady = XIA_MAXCHUNK * chunkQueue.size();
+	if (currentChunk){
+		numBytesReady += XIA_MAXCHUNK - numBytesReadFromCurrentChunk;
+	}
+
 	if( numBytesReady < (int)numBytesRequested){
 		char* listOfChunkCIDs = retrieveCIDs();
-		readChunkData(listOfChunkCIDs);
+
+		// Keep trying to read the sam CID (won't work for CHUNK_WINDOW > 1		
+		//while(chunkQueue.empty()){
+			readChunkData(listOfChunkCIDs);
+		//}
+		currentChunk = chunkQueue.front();
+		chunkQueue.pop();
 	}
 
 	// TODO: Are Chunks Null terminated?
@@ -71,7 +85,7 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 			delete currentChunk;
 			
 			// If Chunk Queue is empty, go fetch some more chunks
-			if(chunkQueue.isEmpty()){
+			while(chunkQueue.empty()){
 				char* listOfChunkCIDs = retrieveCIDs();
 				readChunkData(listOfChunkCIDs);
 			}
@@ -83,7 +97,7 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 		}
 		
 		// copy bytes from the current chunk into buffer
-		while(numBytesReadFromCurrentChunk < XIA_MAXCHUNK){
+		while(numBytesReadFromCurrentChunk < XIA_MAXCHUNK && bytesReadByLastOperation < numBytesRequested){
 			*buffer++ = currentChunk[numBytesReadFromCurrentChunk++];
 			bytesReadByLastOperation++;
 		}
@@ -103,7 +117,7 @@ char* XChunkSocketStream::retrieveCIDs(){
 
 	// tell the server we want a list of <numToReceive> cids starting at location <offset>
 	char cmd[512];
-	sprintf(cmd, "block %d:%d", nextChunkToRequest, numToReceive);
+	sprintf(cmd, "block %d:%d", nextChunkToRequest, nextChunkToRequest + numToReceive);
 	cout << "Sending Chunk Request: " << cmd << endl;
 	sendCmd(cmd);
 
@@ -145,6 +159,8 @@ int XChunkSocketStream::readChunkData(char* listOfChunkCIDs){
         // Set chunk_ptr to point to the next position (following the space)
         chunk_ptr = next + 1;
     }
+
+	cout << "numChunks: " << numChunks << endl;
     
     // Add the last chunk CID onto the end of the CID chunkStatus list
 	// Commented this out since it was causing 11 things to get requested when should be 10
@@ -196,11 +212,13 @@ int XChunkSocketStream::readChunkData(char* listOfChunkCIDs){
 		cout << "reading chunk " << cid << endl;
         
 		char* chunkData = new char[XIA_MAXCHUNK];
+		memset(chunkData, 0, sizeof(chunkData));
 
         // Receive the chunk, and write into data buffer
         int len = 0;
         if ((len = XreadChunk(chunkSock, chunkData, sizeof(chunkData), 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
 			cout << "error getting chunk\n";
+	    delete chunkData;
             return -1;
         }
 

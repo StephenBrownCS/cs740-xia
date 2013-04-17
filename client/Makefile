@@ -20,6 +20,7 @@ ifeq "$(UNAME)" "Darwin"
 LIBS += -lSDLmain -framework Carbon -framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework Cocoa
 endif
 
+CFLAGS += -g
 LDFLAGS += $(LIBS)
 
 all: VideoClient XChunkSocketStream

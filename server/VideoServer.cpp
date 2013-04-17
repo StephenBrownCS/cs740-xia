@@ -201,12 +201,17 @@ void *processRequest (void *socketid)
 	        cout << "Request is for a certain chunk span" << endl;
         
 	        // Parse the Request, extract start and end offsets
-	        int findpos = SIDReqStr.find(":");
+			        
+		int findpos = SIDReqStr.find(":");
 	        // split around this position
-	        string str = SIDReqStr.substr(0, findpos);
+		string prefix = "block ";
+	        string str = SIDReqStr.substr(prefix.length(), findpos);
 	        int start_offset = atoi(str.c_str()); 
 	        str = SIDReqStr.substr(findpos + 1);
 	        int end_offset = atoi(str.c_str());
+
+		cout << "Start: " << start_offset << endl;
+		cout << "End: " << end_offset << endl;
 
 	        // construct the string from CIDlist
 	        // return the list of CIDs, NOT including end_offset
