@@ -1,3 +1,6 @@
+#ifndef __X_CHUNK_SOCKET_STREAM_H_
+#define __X_CHUNK_SOCKET_STREAM_H_
+
 #include<iostream>
 #include<queue>
 
@@ -60,3 +63,5 @@ private:
 	int receiveReply(char *reply, int size);
 	
 };
+
+#endif

@@ -8,28 +8,32 @@ include ../../xia-core/xia.mk
 #LIBFILES = libXsocket.a libXsocket.so _xsocket.so xsocket.py
 #XIADIR = /home/xia/xia-core
 
+
+ifeq "$(UNAME)" "Linux"
+INCLUDE=
+LIBS += -lasound
+endif
+
+ifeq "$(UNAME)" "Darwin"
+#INCLUDE=-I/opt/local/include
+LIBS += -lSDLmain -framework Carbon -framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework Cocoa
+endif
+
 LDFLAGS += $(LIBS)
 
 all: VideoClient XChunkSocketStream
 
-VideoClient: VideoClient.cpp
+VideoClient: VideoClient.cpp Utility XChunkSocketStream
 	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp $(LDFLAGS)
 
-XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h
-	g++ -Wall -Wextra $(CFLAGS) -o $@ XChunkSocketStream.cpp $(LDFLAGS)
+Utility: Utility.h Utility.cpp
+	g++ -Wall -Wextra $(CFLAGS) Utility.cpp $(LDFLAGS)
 
-#libXsocket.a:
-#	ln -s ../../xia-core/api/xsocket/libXsocket.a .
+XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h PloggOggDecoder Utility
+	g++ -Wall -Wextra $(CFLAGS) -o $@ XChunkSocketStream.cpp PloggOggDecoder.cpp $(LDFLAGS)
 
-#libXsocket.so:
-#	ln -s ../../xia-core/api/xsocket/libXsocket.so .
-
-#_xsocket.so:
-#	ln -s ../../xia-core/api/socket/API/python/_xsocket.so .
-
-#xsocket.py:
-#	ln -s ../../xia/core/api/socket/API/python/xsocket.py .
-
+PloggOggDecoder: PloggOggDecoder.cpp PloggOggDecoder.h
+	g++ -g -I/opt/local/include -L/opt/local/lib -c $(INCLUDE) -lsydneyaudio -lvorbis -ltheoradec -logg -lSDL -o PloggOggDecoder.o PloggOggDecoder.cpp
 
 clean:
 	rm VideoClient

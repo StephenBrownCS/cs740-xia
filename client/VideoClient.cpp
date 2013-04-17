@@ -7,6 +7,9 @@
 #include <iostream>
 #include "Xsocket.h"
 #include "dagaddr.hpp"
+#include "Utility.h"
+#include "XChunkSocketStream.h"
+#include "Plogg.h"
 
 using namespace std;
 
@@ -31,15 +34,7 @@ char *SERVER_HID;
 
 
 
-/*
-** write the message to stdout unless in quiet mode
-*/
-void say(const char *fmt, ...);
 
-/*
-** write the message to stdout, and exit the app
-*/
-void die(int ecode, const char *fmt, ...);
 
 int sendCmd(int sock, const char *cmd);
 
@@ -277,27 +272,7 @@ int getChunkData(int chunkSock, char* listOfChunkCIDs)
 
 
 
-void say(const char *fmt, ...)
-{
-    if (VERBOSE) {
-        va_list args;
 
-        va_start(args, fmt);
-        vprintf(fmt, args);
-        va_end(args);
-    }
-}
-
-void die(int ecode, const char *fmt, ...)
-{
-    va_list args;
-
-    va_start(args, fmt);
-    vfprintf(stdout, fmt, args);
-    va_end(args);
-    fprintf(stdout, "%s: exiting\n", TITLE);
-    exit(ecode);
-}
 
 int sendCmd(int sock, const char *cmd)
 {
