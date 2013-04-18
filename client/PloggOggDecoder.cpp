@@ -298,6 +298,7 @@ void PloggOggDecoder::play(istream& is) {
 
 
 bool PloggOggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page* page) {
+  cout << "Read Page!" << endl;
   int ret = 0;
 
   XChunkSocketStream & xStream = dynamic_cast<XChunkSocketStream &>(stream);
@@ -316,7 +317,18 @@ bool PloggOggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page
 
     // Read from the file into the buffer
     xStream.read(buffer, 4096);
+
+    cout << "BUFFER:" << endl << buffer << endl;
+    string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for(int i = 0; i < 4096; i++){
+	cout << alphabet[buffer[i]%26];
+    }
+    
+
     int bytes = xStream.gcount();
+    cout << "Bytes: " << bytes << endl;
+    exit(0);
+
     if (bytes == 0) {
       // End of file. 
       continue;
