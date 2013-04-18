@@ -1,11 +1,11 @@
 #include <cassert>
 #include "Chunk.h"
 
-Chunk::Chunk(const char* const buffer, const int size):
-    size(size)
+Chunk::Chunk(const char* const buffer, const int length):
+    length(length)
 {    
-    this->buffer = new char[size];
-    for(int i = 0; i < size; i++){
+    this->buffer = new char[length];
+    for(int i = 0; i < length; i++){
         this->buffer[i] = buffer[i];
     }
 }
@@ -14,12 +14,12 @@ Chunk::~Chunk(){
     delete buffer;
 }
 
-int Chunk::size(){
-    return size;
+int Chunk::size() const{
+    return length;
 }
 
 char Chunk::operator[](int index){
-    assert(index < size);
+    assert(index < length);
     return buffer[index];
 }
 

@@ -8,7 +8,6 @@
 #include "Xsocket.h"
 #include "dagaddr.hpp"
 #include "XChunkSocketStream.h"
-#include "Chunk.h"
 
 using namespace std;
 
@@ -69,7 +68,7 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
     if (currentChunk == NULL){
         assert(chunkQueue.size() > 0);
         currentChunk = chunkQueue.front();
-        chunkQueue.pop();
+        chunkQueue.pop_front();
         numBytesReadFromCurrentChunk = 0;
     }
 
@@ -77,19 +76,19 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
     while(bytesReadByLastOperation < numBytesRequested){
 
         // If current chunk is all used up, move to next chunk
-        if(numBytesReadFromCurrentChunk >= currentChunk.size()){
-            fetchChunks();
+        if(numBytesReadFromCurrentChunk >= currentChunk->size()){
+            //fetchChunks();
 
             // Get the next chunk
             delete currentChunk;
             currentChunk = chunkQueue.front();
-            chunkQueue.pop();
+            chunkQueue.pop_front();
             numBytesReadFromCurrentChunk = 0;
         }
 
         // copy bytes from the current chunk into buffer
-        while(numBytesReadFromCurrentChunk < currentChunk.size() && bytesReadByLastOperation < numBytesRequested){
-            *buffer++ = currentChunk[numBytesReadFromCurrentChunk++];
+        while(numBytesReadFromCurrentChunk < currentChunk->size() && bytesReadByLastOperation < numBytesRequested){
+            *buffer++ = (*currentChunk)[numBytesReadFromCurrentChunk++];
             bytesReadByLastOperation++;
         }
     }
@@ -216,12 +215,11 @@ int XChunkSocketStream::readChunkData(char* listOfChunkCIDs){
         int len = 0;
         if ((len = XreadChunk(chunkSock, chunkData, XIA_MAXCHUNK, 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
             cout << "error getting chunk\n";
-            delete chunkData;
             return -1;
         }
         cout << "len: " << len << endl;
 
-        chunkQueue.push(new Chunk(chunkData, len));
+        chunkQueue.push_back(new Chunk(chunkData, len));
 
         free(chunkStatuses[i].cid);
         chunkStatuses[i].cid = NULL;
@@ -286,12 +284,12 @@ int XChunkSocketStream::numBytesReady(){
     // num bytes in the chunk queue
     int numBytesReady = 0;
     ByteCounterFO byteCounter;
-    for_each(chunkQueue.begin(), chunkQueue.end(), byteCounter);
+    byteCounter = for_each(chunkQueue.begin(), chunkQueue.end(), byteCounter);
     
     numBytesReady += byteCounter.count;
     
     if (currentChunk){
-        numBytesReady += currentChunk.size() - numBytesReadFromCurrentChunk;
+        numBytesReady += currentChunk->size() - numBytesReadFromCurrentChunk;
     }
     
     return numBytesReady;

@@ -3,12 +3,14 @@
 class Chunk{
 private:
     char* buffer;
-    const int size;
+    const int length;
     
 public:
-    Chunk(const char* const buffer, const int size);
+    Chunk(const char* const buffer, const int length);
     
-    int Chunk::size();
+    ~Chunk();
+
+    int size() const;
     
     char operator[](int index);
     

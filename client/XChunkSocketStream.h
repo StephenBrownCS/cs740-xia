@@ -2,8 +2,9 @@
 #define __X_CHUNK_SOCKET_STREAM_H_
 
 #include<iostream>
-#include<queue>
+#include<list>
 #include<utility>
+#include "Chunk.h"
 
 class XChunkSocketStream : public std::istream{
 private:
@@ -26,7 +27,7 @@ private:
 	int numBytesReadFromCurrentChunk;
 	
 	// Container which represents the next chunk
-	std::queue< Chunk* >chunkQueue;
+	std::list< Chunk* >chunkQueue;
 	
 public:
 	
