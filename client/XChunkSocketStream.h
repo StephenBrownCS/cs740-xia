@@ -3,8 +3,7 @@
 
 #include<iostream>
 #include<queue>
-
-using namespace std;
+#include<utility>
 
 class XChunkSocketStream : public istream{
 private:
@@ -21,13 +20,14 @@ private:
 	
 	// Represents the current chunk being copied from
 	char* currentChunk;
+	int currentChunkSize;
 	
 	// Represents the number of chunks that have already 
 	// been read from the current chunk
 	int numBytesReadFromCurrentChunk;
 	
 	// Container which represents the next chunks
-	queue<char* > chunkQueue;
+	std::queue<std::pair<char*, int> chunkQueue;
 	
 public:
 	

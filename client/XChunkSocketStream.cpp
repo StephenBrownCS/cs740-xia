@@ -73,14 +73,15 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 		//while(chunkQueue.empty()){
 			readChunkData(listOfChunkCIDs);
 		//}
-		currentChunk = chunkQueue.front();
+		currentChunk = chunkQueue.front().first;
+		currentChunkSize = chunkQueue.front().second;
 		chunkQueue.pop();
 	}
 
 	while(bytesReadByLastOperation < numBytesRequested){
 		
 		// If current chunk is all used up, move to next chunk
-		if(numBytesReadFromCurrentChunk >= XIA_MAXCHUNK){
+		if(numBytesReadFromCurrentChunk >= currentChunkSize){
 			delete currentChunk;
 			
 			// If Chunk Queue is empty, go fetch some more chunks
@@ -90,18 +91,18 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 			}
 			
 			// Get the next chunk
-			currentChunk = chunkQueue.front();
+            currentChunk = chunkQueue.front().first;
+            currentChunkSize = chunkQueue.front().second;
 			chunkQueue.pop();
 			numBytesReadFromCurrentChunk = 0;
 		}
 		
 		// copy bytes from the current chunk into buffer
-		while(numBytesReadFromCurrentChunk < XIA_MAXCHUNK && bytesReadByLastOperation < numBytesRequested){
+		while(numBytesReadFromCurrentChunk < currentChunkSize && bytesReadByLastOperation < numBytesRequested){
 			*buffer++ = currentChunk[numBytesReadFromCurrentChunk++];
 			//cout << *buffer;			
 			bytesReadByLastOperation++;
 		}
-		cout << "XIA MAXCHUNK: " << XIA_MAXCHUNK << endl;
 		cout << endl << "END OF CHUNK" << endl;
 	}
 	return *this;
@@ -225,7 +226,7 @@ int XChunkSocketStream::readChunkData(char* listOfChunkCIDs){
         }
 	cout << "len: " << len << endl;
 
-		chunkQueue.push(chunkData);
+		chunkQueue.push(make_pair(chunkData, len));
 
         free(chunkStatuses[i].cid);
         chunkStatuses[i].cid = NULL;
