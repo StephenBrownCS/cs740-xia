@@ -178,16 +178,8 @@ bool OggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page* pag
 
     // Read from the file into the buffer
     stream.read(buffer, 4096);
-    cout << "BUFFER:" << endl << buffer << endl;
-    string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for(int i = 0; i < 4096; i++){
-	cout << alphabet[buffer[i]%26];
-    }
 
     int bytes = stream.gcount();
-    cout << "Bytes: " << bytes << endl;
-    exit(0);
-
     if (bytes == 0) {
       // End of file. 
       continue;
@@ -470,7 +462,7 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
       assert(r == 0);
       mSurface = SDL_SetVideoMode(buffer[0].width, 
 				  buffer[0].height,
-				  32,
+				  32, //Bits per pixel
 				  SDL_SWSURFACE);
       assert(mSurface);
     }
