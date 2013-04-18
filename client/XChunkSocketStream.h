@@ -5,7 +5,7 @@
 #include<queue>
 #include<utility>
 
-class XChunkSocketStream : public istream{
+class XChunkSocketStream : public std::istream{
 private:
 	// Descriptor to the chunk socket to read from
 	int xSocket;
@@ -26,8 +26,8 @@ private:
 	// been read from the current chunk
 	int numBytesReadFromCurrentChunk;
 	
-	// Container which represents the next chunks
-	std::queue<std::pair<char*, int> chunkQueue;
+	// Container which represents the next chunk
+	std::queue<std::pair<char*, int> >chunkQueue;
 	
 public:
 	
@@ -45,7 +45,7 @@ public:
 	/** Overridden method of istream
 	 * Reads up to numBytesRequested bytes into the buffer
 	*/
-	istream& read(char* buffer, streamsize numBytesRequested);
+	std::istream& read(char* buffer, std::streamsize numBytesRequested);
 	
 private:
 	/**
