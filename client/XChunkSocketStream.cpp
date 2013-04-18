@@ -10,7 +10,6 @@
 using namespace std;
 
 
-//TODO: WHY IS THIS ALWAYS 10??????
 const int CHUNK_WINDOW_SIZE = 1;
 
 //TODO: WHY?
