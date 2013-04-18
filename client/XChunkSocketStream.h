@@ -19,15 +19,14 @@ private:
 	const char* const SERVER_HID;
 	
 	// Represents the current chunk being copied from
-	char* currentChunk;
-	int currentChunkSize;
+	Chunk* currentChunk;
 	
 	// Represents the number of chunks that have already 
 	// been read from the current chunk
 	int numBytesReadFromCurrentChunk;
 	
 	// Container which represents the next chunk
-	std::queue<std::pair<char*, int> >chunkQueue;
+	std::queue< Chunk* >chunkQueue;
 	
 public:
 	
@@ -48,23 +47,36 @@ public:
 	std::istream& read(char* buffer, std::streamsize numBytesRequested);
 	
 private:
+
+    /**
+     * Requests for a list of CIDs from the server and then fetches the chunks 
+     * and places them in the chunkQueue.
+    */
+    void fetchChunks();
+
+
 	/**
 	 * Asks the server for a list of CIDs
-	 * Receives the reply and returns the list
+	 * Server return format: CID:<CID 1> CID:<CID2> etc.
+	 * Receives the reply and returns a dynamically-allocated char* buffer that 
+	 * represents the list of CIDs
 	*/
 	char* retrieveCIDs();
 	
 	/**
 	 * Fetches the chunk data referred to by the list of CIDs
+	 * and places the chunks in the chunkQueue
 	 * Returns the number of chunks read in
 	*/
 	int readChunkData(char* listOfChunkCIDs);
-	
 	
 	int sendCmd(const char *cmd);
 
 	int receiveReply(char *reply, int size);
 	
+	// Returns the number of bytes ready in the queue + bytes remaining in 
+	// current chunk, if applicable
+	int numBytesReady();
 };
 
 #endif

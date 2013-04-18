@@ -26,12 +26,15 @@ LDFLAGS += $(LIBS)
 all: VideoClient XChunkSocketStream
 
 VideoClient: VideoClient.cpp Utility XChunkSocketStream
-	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp Utility.o XChunkSocketStream.o PloggOggDecoder.o $(LDFLAGS)
+	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp Utility.o XChunkSocketStream.o PloggOggDecoder.o Chunk.o $(LDFLAGS)
 
 Utility: Utility.h Utility.cpp
 	g++ -Wall -Wextra $(CFLAGS) -c Utility.cpp $(LDFLAGS)
 
-XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h PloggOggDecoder Utility
+Chunk: Chunk.h Chunk.cpp
+	g++ -Wall -Wextra $(CFLAGS) -c Chunk.cpp $(LDFLAGS)
+
+XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h PloggOggDecoder Utility Chunk
 	g++ -Wall -Wextra $(CFLAGS) -c XChunkSocketStream.cpp PloggOggDecoder.cpp $(LDFLAGS)
 
 PloggOggDecoder: PloggOggDecoder.cpp PloggOggDecoder.h
