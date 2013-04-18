@@ -35,6 +35,7 @@ using namespace std;
 //GLOBAL CONFIGURATION OPTIONS
 int VERBOSE = 1;
 string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
+//string VIDEO_NAME = "../../small.ogv";
 
 // Container of CIDs
 vector<string> CIDlist;
