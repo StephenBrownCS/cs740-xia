@@ -11,4 +11,10 @@ void say(const char *fmt, ...);
 */
 void die(int ecode, const char *fmt, ...);
 
+/*
+** Sends the cmd string trhough the socket
+** If unsuccessful, closes the socket, and quits the program
+*/
+int sendCmd(int sock, const char *cmd);
+
 #endif
