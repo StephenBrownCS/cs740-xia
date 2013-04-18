@@ -191,6 +191,9 @@ void *processRequest (void *socketid)
 	        Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
 	    } 
 		// TODO: Add handling of a "Close Connection" Packet
+            else if(SIDReqStr.find("done") != -1){
+                clientSignaledToClose = true;
+            }
 	    else {
 	        // Otherwise, if the request was not about the number of chunks,
 	        // it must be a request for a certain chunk

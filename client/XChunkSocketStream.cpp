@@ -35,6 +35,7 @@ XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile, const c
     currentChunk = NULL;
     bytesReadByLastOperation = 0;
     numBytesReadFromCurrentChunk = 0;
+    reachedEndOfFile = false;
 
     this->numChunksInFile = numChunksInFile;
     nextChunkToRequest = 0;
@@ -48,7 +49,7 @@ int XChunkSocketStream::gcount(){
 
 
 bool XChunkSocketStream::good(){
-    return true;
+    return !reachedEndOfFile;
 }
 
 
@@ -98,12 +99,20 @@ istream& XChunkSocketStream::read(char* buffer, streamsize numBytesRequested){
 
 void XChunkSocketStream::fetchChunks(){
     char* listOfChunkCIDs = retrieveCIDs();
-    readChunkData(listOfChunkCIDs);
-    delete listOfChunkCIDs;
+    if(listOfChunkCIDs){
+        readChunkData(listOfChunkCIDs);
+        delete listOfChunkCIDs;
+    }
 }
 
 
 char* XChunkSocketStream::retrieveCIDs(){
+    if(numChunksInFile <= nextChunkToRequest){
+        reachedEndOfFile = true;
+	return NULL;
+    }
+
+
     // GET LIST OF CIDs FROM SERVER
     // Determine how many chunks to ask for
     int numToReceive = CHUNK_WINDOW_SIZE;

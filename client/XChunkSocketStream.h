@@ -16,6 +16,9 @@ private:
 	int numChunksInFile;
 	int nextChunkToRequest;
 	
+        // Flag that is checked by good() and is set by retrieveCIDs
+        bool reachedEndOfFile;
+
 	const char* const SERVER_AD;
 	const char* const SERVER_HID;
 	
@@ -61,6 +64,7 @@ private:
 	 * Server return format: CID:<CID 1> CID:<CID2> etc.
 	 * Receives the reply and returns a dynamically-allocated char* buffer that 
 	 * represents the list of CIDs
+         * Returns NULL if we have already reached the end of the file
 	*/
 	char* retrieveCIDs();
 	
