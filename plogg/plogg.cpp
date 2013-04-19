@@ -460,30 +460,44 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
     if (!mSurface) {
       int r = SDL_Init(SDL_INIT_VIDEO);
       assert(r == 0);
+
+      // This is the "window" that we display on
       mSurface = SDL_SetVideoMode(buffer[0].width, 
 				  buffer[0].height,
-				  32, //Bits per pixel
+				  0, //Bits per pixel
 				  SDL_SWSURFACE);
       assert(mSurface);
     }
    
     // Create a YUV overlay to do the YUV to RGB conversion
     if (!mOverlay) {
-      mOverlay = SDL_CreateYUVOverlay(buffer[0].width,
-				      buffer[0].height,
+      // This is the thing we will be superimposing on our window
+      mOverlay = SDL_CreateYUVOverlay(buffer[0].width * 2,
+				      buffer[0].height * 2,
 				      SDL_YV12_OVERLAY,
 				      mSurface);
       assert(mOverlay);
     }
 
-    SDL_Rect rect;
-    rect.x = 0;
-    rect.y = 0;
-    rect.w = buffer[0].width;
-    rect.h = buffer[0].height;
+    static SDL_Rect rect;
+    rect.x = 100;
+    rect.y = 100;
+    rect.w = buffer[0].width * 20;
+    rect.h = buffer[0].height * 20;
     
+    
+    if( SDL_MUSTLOCK(mSurface) ){
+        if ( SDL_LockSurface(mSurface) < 0 ){
+             cerr << "Could not lock surface" << endl;
+             exit(-1);
+        }
+    }
+
 	// Copy each of the YUV buffer planes into mOverlay
-    SDL_LockYUVOverlay(mOverlay);
+    if(SDL_LockYUVOverlay(mOverlay) != 0){
+        cerr << "Could not lock overlay" << endl;
+        exit(-1);
+    }
     for (int i=0; i < buffer[0].height; ++i)
       memcpy(mOverlay->pixels[0]+(mOverlay->pitches[0]*i), 
 	     buffer[0].data+(buffer[0].stride*i), 
@@ -499,7 +513,18 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
 	     buffer[2].data+(buffer[2].stride*i), 
 	     mOverlay->pitches[1]);
     
-    SDL_UnlockYUVOverlay(mOverlay);	  
+
+    int x = 2;
+    int y = 0;
+    *(mOverlay->pixels[0] + y * mOverlay->pitches[0] + x) = 0x10;
+    *(mOverlay->pixels[1] + y/2 * mOverlay->pitches[1] + x/2) = 0x80;
+    *(mOverlay->pixels[2] + y/2 * mOverlay->pitches[2] + x/2) = 0x80;    
+
+    if(SDL_MUSTLOCK(mSurface)){
+         SDL_UnlockSurface(mSurface);
+    }
+
+    SDL_UnlockYUVOverlay(mOverlay);
     SDL_DisplayYUVOverlay(mOverlay, &rect);
   }
 }

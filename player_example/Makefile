@@ -11,7 +11,7 @@ endif
 
 all: player_example
 
-player_example.o: player_example.cpp 
+player_example.o: player_example.c 
 	g++ -g -I/opt/local/include -L/opt/local/lib -c $(INCLUDE) -o player_example.o player_example.c
 
 player_example: player_example.o 

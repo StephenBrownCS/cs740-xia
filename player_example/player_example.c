@@ -58,7 +58,7 @@
 #include <signal.h>
 #include "theora/theora.h"
 #include "vorbis/codec.h"
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 /* yes, this makes us OSS-specific for now. None of SDL, libao, libao2
    give us any way to determine hardware timing, and since the
@@ -75,6 +75,8 @@
 #define AUDIO_DEVICE "/dev/dsp"
 #endif
 #include <sys/ioctl.h>
+
+//controlC0  pcmC0D0c  pcmC0D0p  pcmC0D1c
 
 /* Helper; just grab some more compressed bitstream and sync it for
    page extraction */
@@ -193,7 +195,7 @@ static void open_audio(){
   audiofd_fragsize=info.fragsize;
   audiofd_totalsize=info.fragstotal*info.fragsize;
 
-  audiobuf=malloc(audiofd_fragsize);
+  audiobuf = (ogg_int16_t*)malloc(audiofd_fragsize);
 }
 
 static void audio_close(void){
@@ -314,7 +316,7 @@ static void open_video(void){
     exit(1);
   }
 
-  screen = SDL_SetVideoMode(w, h, 0, SDL_SWSURFACE);
+  screen = SDL_SetVideoMode(w, h, 32, SDL_SWSURFACE);
   if ( screen == NULL ) {
     fprintf(stderr, "Unable to set %dx%d video: %s\n",
             w,h,SDL_GetError());
@@ -418,7 +420,7 @@ static int dump_comments(theora_comment *tc){
     for(i=0;i<tc->comments;i++){
       if(tc->user_comments[i]){
         len=tc->comment_lengths[i];
-        value=malloc(len+1);
+        value = (char*)malloc(len+1);
         memcpy(value,tc->user_comments[i],len);
         value[len]='\0';
         fprintf(out, "\t%s\n", value);
