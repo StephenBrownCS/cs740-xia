@@ -1,16 +1,26 @@
 #include <iostream>
 #include <SDL/SDL.h>
+#include <time.h>
 
 using namespace std;
 
 SDL_Surface* initVideoDisplay();
-void display_bmp(char *file_name);
+void display_bmp(SDL_Surface* screen, const char *file_name);
 
 
 int main(){
-    SDL_Surface* surface = initVideoDisplay();
-    display_bmp();
+    SDL_Surface* screen = initVideoDisplay();
+    display_bmp(screen, "blackbuck.bmp");
     
+    struct timespec tim, tim2;
+    tim.tv_sec = 10;
+    tim.tv_nsec = 500;
+
+    if(nanosleep(&tim, &tim2) < 0 ){
+        cerr << "Not happening bro" << endl;
+        return -1;
+    }
+
     return 0;
 }
 
@@ -42,7 +52,7 @@ SDL_Surface* initVideoDisplay(){
 }
 
 
-void display_bmp(char *file_name)
+void display_bmp(SDL_Surface* screen, const char *file_name)
 {
     SDL_Surface *image;
 
@@ -52,6 +62,8 @@ void display_bmp(char *file_name)
         fprintf(stderr, "Couldn't load %s: %s\n", file_name, SDL_GetError());
         return;
     }
+
+
 
     /*
      * Palettized screen modes will have a default palette (a standard
@@ -63,11 +75,25 @@ void display_bmp(char *file_name)
                   image->format->palette->ncolors);
     }
 
+/*
+    image = SDL_DisplayFormat(image);
+    if (image == NULL){
+       cerr << "Sorry, not happening bro" << endl;
+       return;
+    }
+    */
+
     /* Blit onto the screen surface */
     if(SDL_BlitSurface(image, NULL, screen, NULL) < 0)
         fprintf(stderr, "BlitSurface error: %s\n", SDL_GetError());
-
+    
+    // SDL_UpdateRect doesn't work!
     SDL_UpdateRect(screen, 0, 0, image->w, image->h);
+    
+    // For some reason, we need to call SDL_Flip
+    SDL_Flip(screen);
+    //SDL_Delay(3000);
+
 
     /* Free the allocated BMP surface */
     SDL_FreeSurface(image);
