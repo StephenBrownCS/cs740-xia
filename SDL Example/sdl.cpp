@@ -11,7 +11,8 @@ void displayOverlay(SDL_Surface* screen);
 int main(){
     SDL_Surface* screen = initVideoDisplay();
     //display_bmp(screen, "blackbuck.bmp");
-    displayOverlay(screen);    
+    //displayOverlay(screen);   
+    handle_theora_data(screen); 
 
     struct timespec tim, tim2;
     tim.tv_sec = 10;
@@ -171,6 +172,70 @@ void displayOverlay(SDL_Surface* screen){
     delete[] v_video_data;
 }
 
+void handle_theora_data(SDL_Surface* screen) {
+  // If the return code is TH_DUPFRAME then we don't need to
+  // get the YUV data and display it since it's the same as
+  // the previous frame.
 
+  if (1/*ret == 0*/) {
+
+     
+    // Create an SDL surface to display if we haven't
+    // already got one.
+    
+    if (!mSurface) {
+      int r = SDL_Init(SDL_INIT_VIDEO);
+      assert(r == 0);
+     
+
+      // This is the "window" that we display on
+      mSurface = SDL_SetVideoMode(560, //buffer[0].width, 
+				  320, //buffer[0].height,
+				  0, //Bits per pixel
+				  SDL_SWSURFACE);
+      assert(mSurface);
+    }
+   
+    // Create a YUV overlay to do the YUV to RGB conversion
+    if (!mOverlay) {
+      // This is the thing we will be superimposing on our window
+      mOverlay = SDL_CreateYUVOverlay(560, //buffer[0].width,
+				      320, //buffer[0].height,
+				      SDL_YV12_OVERLAY,
+				      mSurface);
+      assert(mOverlay);
+    }
+
+    static SDL_Rect rect;
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = 560;//buffer[0].width;
+    rect.h = 320;//buffer[0].height;
+   
+
+    if( SDL_MUSTLOCK(mSurface) ){
+        if ( SDL_LockSurface(mSurface) < 0 ){
+             cerr << "Could not lock surface" << endl;
+             exit(-1);
+        }
+    }
+
+	// Copy each of the YUV buffer planes into mOverlay
+    int x = 2;
+    int y = 0;
+    *(mOverlay->pixels[0] + y * mOverlay->pitches[0] + x) = 0x10;
+    *(mOverlay->pixels[1] + y/2 * mOverlay->pitches[1] + x/2) = 0x80;
+    *(mOverlay->pixels[2] + y/2 * mOverlay->pitches[2] + x/2) = 0x80;    
+
+    if(SDL_MUSTLOCK(mSurface)){
+         SDL_UnlockSurface(mSurface);
+    }
+
+    SDL_UnlockYUVOverlay(mOverlay);
+    //SDL_Flip(mSurface);
+    SDL_DisplayYUVOverlay(mOverlay, &rect);
+    SDL_Delay(3000);
+  }
+}
 
 
