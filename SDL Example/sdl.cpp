@@ -6,7 +6,7 @@ using namespace std;
 
 SDL_Surface* initVideoDisplay();
 void display_bmp(SDL_Surface* screen, const char *file_name);
-
+void displayOverlay(SDL_Surface* screen);
 
 int main(){
     SDL_Surface* screen = initVideoDisplay();
@@ -98,3 +98,58 @@ void display_bmp(SDL_Surface* screen, const char *file_name)
     /* Free the allocated BMP surface */
     SDL_FreeSurface(image);
 }
+
+void displayOverlay(SDL_Surface* screen){
+    SDL_Overlay my_overlay = SDL_CreateYUVOverlay(640, 480, SDL_IYUV_OVERLAY, main_surface);
+    
+    /* Display number of planes */
+    printf("Planes: %d\n", my_overlay->planes);
+
+    /* Fill in video data */
+    char* y_video_data = new char[my_overlay->pitches[0]]
+    char* u_video_data = new char[my_overlay->pitches[1]]
+    char* v_video_data = new char[my_overlay->pitches[2]]
+    
+    for(int i = 0; i < my_overlay->pitches[0]; i++){
+        y_video_data[i] = 0x10;
+    }
+    
+    for(int i = 0; i < my_overlay->pitches[1]; i++){
+        u_video_data[i] = 0x80;
+    }
+    
+    for(int i = 0; i < my_overlay->pitches[2]; i++){
+        v_video_data[i] = 0x80;
+    }
+
+    /* Fill in pixel data - the pitches array contains the length of a line in each plane */
+    SDL_LockYUVOverlay(my_overlay);
+    memcpy(my_overlay->pixels[0], y_video_data, my_overlay->pitches[0]);
+    memcpy(my_overlay->pixels[1], u_video_data, my_overlay->pitches[1]);
+    memcpy(my_overlay->pixels[2], v_video_data, my_overlay->pitches[2]);
+
+    /* Draw a single pixel on (x, y) */
+    *(my_overlay->pixels[0] + y * my_overlay->pitches[0] + x) = 0x10;
+    *(my_overlay->pixels[1] + y/2 * my_overlay->pitches[1] + x/2) = 0x80;
+    *(my_overlay->pixels[2] + y/2 * my_overlay->pitches[2] + x/2) = 0x80; 
+ 
+    SDL_UnlockYUVOverlay(my_overlay);
+    
+    SDL_Rectangle video_rect;
+    video_rect.x = 0;
+    video_rect.y = 0;
+    video_rect.w = 800;
+    video_rect.h = 600;
+
+    SDL_DisplayYUVOverlay(my_overlay, &video_rect);
+    
+    SDL_Delay(3000);
+    
+    delete y_video_data;
+    delete u_video_data;
+    delete v_video_data;
+}
+
+
+
+
