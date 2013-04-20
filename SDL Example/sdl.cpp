@@ -10,8 +10,9 @@ void displayOverlay(SDL_Surface* screen);
 
 int main(){
     SDL_Surface* screen = initVideoDisplay();
-    display_bmp(screen, "blackbuck.bmp");
-    
+    //display_bmp(screen, "blackbuck.bmp");
+    displayOverlay(screen);    
+
     struct timespec tim, tim2;
     tim.tv_sec = 10;
     tim.tv_nsec = 500;
@@ -41,7 +42,7 @@ SDL_Surface* initVideoDisplay(){
      * Initialize the display in a 640x480 8-bit palettized mode,
      * requesting a software surface
      */
-    screen = SDL_SetVideoMode(640, 480, 8, SDL_SWSURFACE);
+    screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE);
     if ( screen == NULL ) {
         fprintf(stderr, "Couldn't set 640x480x8 video mode: %s\n",
                         SDL_GetError());
@@ -100,15 +101,20 @@ void display_bmp(SDL_Surface* screen, const char *file_name)
 }
 
 void displayOverlay(SDL_Surface* screen){
-    SDL_Overlay my_overlay = SDL_CreateYUVOverlay(640, 480, SDL_IYUV_OVERLAY, main_surface);
-    
+    SDL_Overlay* my_overlay = SDL_CreateYUVOverlay(640, 480, SDL_YV12_OVERLAY, screen);
+    if(my_overlay == NULL){
+         cerr << "Sorry Nick" << endl;
+         exit(-1);
+    }    
+
     /* Display number of planes */
     printf("Planes: %d\n", my_overlay->planes);
 
     /* Fill in video data */
-    char* y_video_data = new char[my_overlay->pitches[0]]
-    char* u_video_data = new char[my_overlay->pitches[1]]
-    char* v_video_data = new char[my_overlay->pitches[2]]
+    char* y_video_data = new char[my_overlay->pitches[0]];
+    char* u_video_data = new char[my_overlay->pitches[1]];
+    char* v_video_data = new char[my_overlay->pitches[2]];
+    
     
     for(int i = 0; i < my_overlay->pitches[0]; i++){
         y_video_data[i] = 0x10;
@@ -121,33 +127,48 @@ void displayOverlay(SDL_Surface* screen){
     for(int i = 0; i < my_overlay->pitches[2]; i++){
         v_video_data[i] = 0x80;
     }
+    
+
+    cout << "Unlock Baby!" << endl;
 
     /* Fill in pixel data - the pitches array contains the length of a line in each plane */
-    SDL_LockYUVOverlay(my_overlay);
+    SDL_LockSurface(screen);
+    int ret = SDL_LockYUVOverlay(my_overlay);
+    if (ret < 0){
+        cerr << "Couldn't lock!";
+        exit(-1);
+    }
+
     memcpy(my_overlay->pixels[0], y_video_data, my_overlay->pitches[0]);
     memcpy(my_overlay->pixels[1], u_video_data, my_overlay->pitches[1]);
     memcpy(my_overlay->pixels[2], v_video_data, my_overlay->pitches[2]);
 
-    /* Draw a single pixel on (x, y) */
+    /* Draw a single pixel on (x, y) 
     *(my_overlay->pixels[0] + y * my_overlay->pitches[0] + x) = 0x10;
     *(my_overlay->pixels[1] + y/2 * my_overlay->pitches[1] + x/2) = 0x80;
     *(my_overlay->pixels[2] + y/2 * my_overlay->pitches[2] + x/2) = 0x80; 
- 
+*/
+
+    SDL_UnlockSurface(screen);
     SDL_UnlockYUVOverlay(my_overlay);
     
-    SDL_Rectangle video_rect;
+    cout << "Createing Rectangle" << endl;
+
+    SDL_Rect video_rect;
     video_rect.x = 0;
     video_rect.y = 0;
-    video_rect.w = 800;
-    video_rect.h = 600;
+    video_rect.w = 640;
+    video_rect.h = 480;
 
+    SDL_Flip(screen);
+    cerr << "Flip Complete" << endl;
     SDL_DisplayYUVOverlay(my_overlay, &video_rect);
     
     SDL_Delay(3000);
     
-    delete y_video_data;
-    delete u_video_data;
-    delete v_video_data;
+    delete[] y_video_data;
+    delete[] u_video_data;
+    delete[] v_video_data;
 }
 
 

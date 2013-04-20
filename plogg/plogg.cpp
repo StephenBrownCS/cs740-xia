@@ -130,7 +130,7 @@ public:
   sa_stream_t* mAudio;
   ogg_int64_t  mGranulepos;
   
-private:
+//private:
   bool handle_theora_header(OggStream* stream, ogg_packet* packet);
   bool handle_vorbis_header(OggStream* stream, ogg_packet* packet);
   void read_headers(istream& stream, ogg_sync_state* state);
@@ -437,33 +437,40 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
   // display interval of the frame in the packet.  We keep the
   // granulepos of the frame we've decoded and use this to know the
   // time when to display the next frame.
+  
+  /*
   int ret = th_decode_packetin(stream->mTheora.mCtx,
 			       packet,
 			       &mGranulepos);
   assert(ret == 0 || ret == TH_DUPFRAME);
+  */
 
   // If the return code is TH_DUPFRAME then we don't need to
   // get the YUV data and display it since it's the same as
   // the previous frame.
 
   if (1/*ret == 0*/) {
-	
+    
     // We have a frame. Get the YUV data
 	// th_ycbcr_buffer is typedef'd:
 	// It is an array of 3 th_img_planes: th_img_plane[3]
+    /*
     th_ycbcr_buffer buffer;
     ret = th_decode_ycbcr_out(stream->mTheora.mCtx, buffer);
     assert(ret == 0);
-
+    */
+     
     // Create an SDL surface to display if we haven't
     // already got one.
+    
     if (!mSurface) {
       int r = SDL_Init(SDL_INIT_VIDEO);
       assert(r == 0);
+     
 
       // This is the "window" that we display on
-      mSurface = SDL_SetVideoMode(buffer[0].width, 
-				  buffer[0].height,
+      mSurface = SDL_SetVideoMode(560, //buffer[0].width, 
+				  320, //buffer[0].height,
 				  0, //Bits per pixel
 				  SDL_SWSURFACE);
       assert(mSurface);
@@ -472,20 +479,22 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
     // Create a YUV overlay to do the YUV to RGB conversion
     if (!mOverlay) {
       // This is the thing we will be superimposing on our window
-      mOverlay = SDL_CreateYUVOverlay(buffer[0].width * 2,
-				      buffer[0].height * 2,
+      mOverlay = SDL_CreateYUVOverlay(560, //buffer[0].width,
+				      320, //buffer[0].height,
 				      SDL_YV12_OVERLAY,
 				      mSurface);
       assert(mOverlay);
     }
 
     static SDL_Rect rect;
-    rect.x = 100;
-    rect.y = 100;
-    rect.w = buffer[0].width * 20;
-    rect.h = buffer[0].height * 20;
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = 560;//buffer[0].width;
+    rect.h = 320;//buffer[0].height;
     
-    
+    //cout << "buffer 0 width: " << buffer[0].width << endl;
+    //cout << "buffer 0 height: " << buffer[0].height << endl;    
+
     if( SDL_MUSTLOCK(mSurface) ){
         if ( SDL_LockSurface(mSurface) < 0 ){
              cerr << "Could not lock surface" << endl;
@@ -494,6 +503,7 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
     }
 
 	// Copy each of the YUV buffer planes into mOverlay
+    /*
     if(SDL_LockYUVOverlay(mOverlay) != 0){
         cerr << "Could not lock overlay" << endl;
         exit(-1);
@@ -512,7 +522,7 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
       memcpy(mOverlay->pixels[1]+(mOverlay->pitches[1]*i), 
 	     buffer[2].data+(buffer[2].stride*i), 
 	     mOverlay->pitches[1]);
-    
+    */
 
     int x = 2;
     int y = 0;
@@ -525,7 +535,9 @@ void OggDecoder::handle_theora_data(OggStream* stream, ogg_packet* packet) {
     }
 
     SDL_UnlockYUVOverlay(mOverlay);
+    //SDL_Flip(mSurface);
     SDL_DisplayYUVOverlay(mOverlay, &rect);
+    SDL_Delay(3000);
   }
 }
 
@@ -552,6 +564,10 @@ void usage() {
 }
 
 int main(int argc, char* argv[]) {
+  OggDecoder decoder;
+  decoder.handle_theora_data(NULL, NULL);
+  exit(0);
+
   if (argc != 2) { 
     usage();
     return 0;
