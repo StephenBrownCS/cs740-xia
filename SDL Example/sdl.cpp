@@ -1,12 +1,14 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <time.h>
+#include <cassert>
 
 using namespace std;
 
 SDL_Surface* initVideoDisplay();
 void display_bmp(SDL_Surface* screen, const char *file_name);
 void displayOverlay(SDL_Surface* screen);
+void handle_theora_data(SDL_Surface* screen);
 
 int main(){
     SDL_Surface* screen = initVideoDisplay();
@@ -183,28 +185,37 @@ void handle_theora_data(SDL_Surface* screen) {
     // Create an SDL surface to display if we haven't
     // already got one.
     
-    if (!mSurface) {
+    if (!screen) {
       int r = SDL_Init(SDL_INIT_VIDEO);
       assert(r == 0);
      
 
       // This is the "window" that we display on
-      mSurface = SDL_SetVideoMode(560, //buffer[0].width, 
+      screen = SDL_SetVideoMode(560, //buffer[0].width, 
 				  320, //buffer[0].height,
 				  0, //Bits per pixel
 				  SDL_SWSURFACE);
-      assert(mSurface);
+      assert(screen);
     }
    
     // Create a YUV overlay to do the YUV to RGB conversion
+    SDL_Overlay* mOverlay = NULL;
     if (!mOverlay) {
       // This is the thing we will be superimposing on our window
       mOverlay = SDL_CreateYUVOverlay(560, //buffer[0].width,
 				      320, //buffer[0].height,
 				      SDL_YV12_OVERLAY,
-				      mSurface);
+				      screen);
       assert(mOverlay);
     }
+
+
+    /* Fill in video data */
+    char* y_video_data = new char[mOverlay->pitches[0]];
+    char* u_video_data = new char[mOverlay->pitches[1]];
+    char* v_video_data = new char[mOverlay->pitches[2]];
+    
+
 
     static SDL_Rect rect;
     rect.x = 0;
@@ -213,28 +224,38 @@ void handle_theora_data(SDL_Surface* screen) {
     rect.h = 320;//buffer[0].height;
    
 
-    if( SDL_MUSTLOCK(mSurface) ){
-        if ( SDL_LockSurface(mSurface) < 0 ){
+    if( SDL_MUSTLOCK(screen) ){
+        if ( SDL_LockSurface(screen) < 0 ){
              cerr << "Could not lock surface" << endl;
              exit(-1);
         }
     }
 
-	// Copy each of the YUV buffer planes into mOverlay
+    // Copy each of the YUV buffer planes into mOverlay
+    memcpy(mOverlay->pixels[0], y_video_data, mOverlay->pitches[0]);
+    memcpy(mOverlay->pixels[1], u_video_data, mOverlay->pitches[1]);
+    memcpy(mOverlay->pixels[2], v_video_data, mOverlay->pitches[2]);
+    
     int x = 2;
     int y = 0;
     *(mOverlay->pixels[0] + y * mOverlay->pitches[0] + x) = 0x10;
     *(mOverlay->pixels[1] + y/2 * mOverlay->pitches[1] + x/2) = 0x80;
     *(mOverlay->pixels[2] + y/2 * mOverlay->pitches[2] + x/2) = 0x80;    
 
-    if(SDL_MUSTLOCK(mSurface)){
-         SDL_UnlockSurface(mSurface);
+    if(SDL_MUSTLOCK(screen)){
+         SDL_UnlockSurface(screen);
     }
 
     SDL_UnlockYUVOverlay(mOverlay);
     //SDL_Flip(mSurface);
     SDL_DisplayYUVOverlay(mOverlay, &rect);
     SDL_Delay(3000);
+
+
+        
+    delete[] y_video_data;
+    delete[] u_video_data;
+    delete[] v_video_data;
   }
 }
 
