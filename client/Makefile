@@ -23,10 +23,10 @@ endif
 CFLAGS += -g
 LDFLAGS += $(LIBS)
 
-all: VideoClient XChunkSocketStream
+all: VideoClient
 
 VideoClient: VideoClient.cpp Utility XChunkSocketStream
-	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp Utility.o XChunkSocketStream.o PloggOggDecoder.o Chunk.o $(LDFLAGS)
+	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp Utility.o XChunkSocketStream.o PloggOggDecoder.o Chunk.o ChunkQueue.o ChunkFetcher.o $(LDFLAGS)
 
 Utility: Utility.h Utility.cpp
 	g++ -Wall -Wextra $(CFLAGS) -c Utility.cpp $(LDFLAGS)
@@ -34,11 +34,17 @@ Utility: Utility.h Utility.cpp
 Chunk: Chunk.h Chunk.cpp
 	g++ -Wall -Wextra $(CFLAGS) -c Chunk.cpp $(LDFLAGS)
 
-XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h PloggOggDecoder Utility Chunk
+XChunkSocketStream: XChunkSocketStream.cpp XChunkSocketStream.h PloggOggDecoder Utility Chunk ChunkFetcher
 	g++ -Wall -Wextra $(CFLAGS) -c XChunkSocketStream.cpp PloggOggDecoder.cpp $(LDFLAGS)
 
 PloggOggDecoder: PloggOggDecoder.cpp PloggOggDecoder.h
 	g++ -g -I/opt/local/include -L/opt/local/lib -c $(INCLUDE) -o PloggOggDecoder.o PloggOggDecoder.cpp $(LDFLAGS)
+
+ChunkQueue: ChunkQueue.h ChunkQueue.cpp Chunk
+	g++ -Wall -Wextra $(CFLAGS) -c ChunkQueue.cpp $(LDFLAGS)
+	
+ChunkFetcher: ChunkFetcher.h ChunkFetcher.cpp ChunkQueue
+	g++ -Wall -Wextra $(CFLAGS) -c ChunkFetcher.cpp $(LDFLAGS)
 
 clean:
 	rm VideoClient *.o *~
