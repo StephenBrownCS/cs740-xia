@@ -50,6 +50,7 @@ Chunk* ChunkFetcher::getNextChunkFromQueue(){
         
     // Otherwise, idle around and wait for chunks to get fetched
     while(chunkQueue->size() == 0){
+        cout << "Waiting for Queue to get refilled" << endl;
         sleep(NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK);
     }
     
@@ -64,9 +65,11 @@ void* ChunkFetcher::fetchChunks(void* chunkFetcher_){
 
     while( !chunkFetcher->reachedEndOfFile ){
         while(chunkFetcher->chunkQueue->size() < CHUNK_QUEUE_THRESHOLD_SIZE){
+            cout << "Fetching Chunk Window" << endl;
             chunkFetcher->fetchChunkWindow();
         }
         
+        cout << "Sleeping before we check queue size again" << endl;
         sleep(  NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING);
     }
 }

@@ -35,9 +35,14 @@ XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile, const c
     // CREATE CHUNK FETCHER WORKER THREAD
     chunkFetcher = new ChunkFetcher(xSocket, numChunksInFile, serverAd, serverHid);
     pthread_t chunkFetcherThread;
-    pthread_create(&chunkFetcherThread, NULL, ChunkFetcher::fetchChunks, (void *) chunkFetcher);
+    int ret = pthread_create(&chunkFetcherThread, NULL, 
+                            ChunkFetcher::fetchChunks, (void *) chunkFetcher);
+    if (ret < 0){
+        cerr << "Could not create the chunk fetcher worker thread" << endl;
+        exit(-1);
+    }
 }
-
+å
 
 
 int XChunkSocketStream::gcount(){
