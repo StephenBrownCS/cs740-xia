@@ -17,7 +17,9 @@ void die(int ecode, const char *fmt, ...);
 */
 int sendCmd(int sock, const char *cmd);
 
-
+/** 
+ *  Sleeps for the number of seconds (including fractional seconds)
+*/
 void thread_sleep(double numSeconds);
 
 #endif

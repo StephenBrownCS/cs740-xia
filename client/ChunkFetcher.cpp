@@ -49,6 +49,7 @@ ChunkFetcher::ChunkFetcher(int xSocket_, int numChunksInFile_, const char* serve
 
 ChunkFetcher::~ChunkFetcher(){
     delete chunkQueue;
+    Xclose(chunkSock);
 }
 
 Chunk* ChunkFetcher::getNextChunkFromQueue(){

@@ -111,18 +111,7 @@ int main(){
     // STREAM THE VIDEO
     XChunkSocketStream chunkSocketStream(sock, numChunksInFile, SERVER_AD, SERVER_HID);
     PloggOggDecoder oggDecoder;
-    oggDecoder.play(chunkSocketStream);
-    
-    /*
-    ChunkQueue* queue = ChunkQueue.create();
-    pthread_t chunkFetcherThread;
-    pthread_create(&chunkFetcherThread, NULL, fetchChunks, (void *)&queue);
-
-    PloggOggDecoder oggDecoder;
-    ChunkStream chunkStream(&queue);
-    oggDecoder.play(chunkSocketStream);
-    */
-    
+    oggDecoder.play(chunkSocketStream);   
 
     say("shutting down\n");
     sendCmd(sock, "done");

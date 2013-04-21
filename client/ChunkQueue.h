@@ -16,16 +16,38 @@ class ChunkQueue{
     pthread_mutex_t* queueLock;
 
 public:
+    /**
+     *  Creates the queue
+    */
     ChunkQueue();
     
+    /**
+     *  Destructor
+    */
     ~ChunkQueue();
 
+    /**
+     * Checks the size of the queue
+     * Is Thread Safe
+    */
     int size();
     
+    /**
+     * Removes the first Chunk from the queue.
+     * Is Thread Safe
+    */
     void pop();
     
+    /**
+     * Returns the first chunk from the queue, but does not remove it
+     * Is Thread Safe
+    */
     Chunk* front();
     
+    /**
+     * Adds a chunk to end of the queue
+     * Is Thread Safe
+    */
     void push(Chunk* chunk);
     
 private:

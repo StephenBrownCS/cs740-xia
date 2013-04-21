@@ -1,3 +1,12 @@
+/*
+    Represents a Stream of data coming in from an X Socket. Creates and uses 
+    a chunk socket to receive the actual content.
+
+    This wrapper class was necessary since the PloggOggDecoder class works with 
+    istreams.
+*/
+
+
 #ifndef __X_CHUNK_SOCKET_STREAM_H_
 #define __X_CHUNK_SOCKET_STREAM_H_
 
