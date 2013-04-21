@@ -9,6 +9,7 @@
 using namespace std;
 
 ChunkQueue::ChunkQueue(){
+    queueLock = new pthread_mutex_t();
     int ret = pthread_mutex_init(queueLock, NULL);
     if (ret < 0){
         cerr << "Could not create a mutex for the chunk Queue" << endl;

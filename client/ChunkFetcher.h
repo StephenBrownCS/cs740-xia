@@ -15,7 +15,7 @@ class ChunkFetcher{
 	int numChunksInFile;
 	int nextChunkToRequest;
 	
-    bool reachedEndOfFile;
+    volatile bool reachedEndOfFile;
 
 	const char* const SERVER_AD;
 	const char* const SERVER_HID;

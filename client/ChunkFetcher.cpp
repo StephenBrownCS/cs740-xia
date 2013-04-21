@@ -18,12 +18,14 @@ const int CHUNK_WINDOW_SIZE = 10;
 //TODO: WHY?
 const int REPLY_MAX_SIZE = 512;
 
-const int CHUNK_QUEUE_THRESHOLD_SIZE = 30;
+const int CHUNK_QUEUE_THRESHOLD_SIZE = 100;
 
 // Thread will continually check the queue to see if it needs to fetch more chunks
-const double NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING = 1.0;
+const double NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING = 0.2;
 
-const double NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK = 0.0;
+// When the chunkQueue is empty, and the user is waiting for a new chunk to become 
+// available, this is the time we tell them to wait for
+const double NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK = 0.2;
 
 using namespace std;
 
@@ -54,11 +56,14 @@ Chunk* ChunkFetcher::getNextChunkFromQueue(){
         return NULL;
         
     // Otherwise, idle around and wait for chunks to get fetched
-    while(chunkQueue->size() == 0){
+    while(chunkQueue->size() == 0 && !reachedEndOfFile){
         cout << "Waiting for Queue to get refilled" << endl;
         thread_sleep(NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK);
     }
     
+    if(reachedEndOfFile)
+        return NULL;
+
     Chunk* chunkToReturn = chunkQueue->front();
     chunkQueue->pop();
     return chunkToReturn;
@@ -69,7 +74,8 @@ void* ChunkFetcher::fetchChunks(void* chunkFetcher_){
     ChunkFetcher* chunkFetcher = static_cast<ChunkFetcher* >(chunkFetcher_);
 
     while( !chunkFetcher->reachedEndOfFile ){
-        while(chunkFetcher->chunkQueue->size() < CHUNK_QUEUE_THRESHOLD_SIZE){
+        while(chunkFetcher->chunkQueue->size() < CHUNK_QUEUE_THRESHOLD_SIZE && 
+              !chunkFetcher->reachedEndOfFile){
             cout << "Fetching Chunk Window" << endl;
             chunkFetcher->fetchChunkWindow();
         }
@@ -77,6 +83,9 @@ void* ChunkFetcher::fetchChunks(void* chunkFetcher_){
         cout << "Sleeping before we check queue size again" << endl;
         thread_sleep(  NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING);
     }
+
+    cout << "All chunks fetched" << endl;
+    cout << "Terminating Chunk Fetcher Thread" << endl;
 
     return NULL;
 }
@@ -94,7 +103,7 @@ void ChunkFetcher::fetchChunkWindow(){
 char* ChunkFetcher::retrieveCIDs(){
     if(numChunksInFile <= nextChunkToRequest){
         reachedEndOfFile = true;
-	    return NULL;
+        return NULL;
     }
 
 

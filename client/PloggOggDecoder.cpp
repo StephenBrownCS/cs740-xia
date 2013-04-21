@@ -301,34 +301,35 @@ void PloggOggDecoder::play(istream& is) {
 bool PloggOggDecoder::read_page(istream& stream, ogg_sync_state* state, ogg_page* page) {
     int ret = 0;
 
-// We know that the istream is in fact an XChunkSocketStream, 
-// so treat it as such
-// (istream's methods are not virtual)
+    // We know that the istream is in fact an XChunkSocketStream, 
+    // so treat it as such
+    // (istream's methods are not virtual)
     XChunkSocketStream & xStream = dynamic_cast<XChunkSocketStream &>(stream);
 
-// If we've hit end of file we still need to continue processing
-// any remaining pages that we've got buffered.
+    // If we've hit end of file we still need to continue processing
+    // any remaining pages that we've got buffered.
     if (!xStream.good())
         return ogg_sync_pageout(state, page) == 1;
 
     while((ret = ogg_sync_pageout(state, page)) != 1) {
-// Returns a buffer that can be written too
-// with the given size. This buffer is stored
-// in the ogg synchronisation structure.
+        // Returns a buffer that can be written too
+        // with the given size. This buffer is stored
+        // in the ogg synchronisation structure.
         char* buffer = ogg_sync_buffer(state, 4096);
         assert(buffer);
 
-// Read from the file into the buffer
+        // Read from the file into the buffer
         xStream.read(buffer, 4096);
 
         int bytes = xStream.gcount();
         if (bytes == 0) {
-// End of file. 
-            continue;
+            // End of file. 
+            //in the original plogg file, there was a continue here
+            return ogg_sync_pageout(state, page) == 1;
         }
 
-// Update the synchronisation layer with the number
-// of bytes written to the buffer
+    // Update the synchronisation layer with the number
+    // of bytes written to the buffer
         ret = ogg_sync_wrote(state, bytes);
         assert(ret == 0);
     }
