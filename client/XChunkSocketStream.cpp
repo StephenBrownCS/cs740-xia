@@ -15,12 +15,6 @@
 using namespace std;
 
 
-const int CHUNK_WINDOW_SIZE = 10;
-
-//TODO: WHY?
-const int REPLY_MAX_SIZE = 512;
-
-
 
 XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile, const char* serverAd, const char* serverHid):
     SERVER_AD(serverAd),
@@ -42,7 +36,6 @@ XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile, const c
         exit(-1);
     }
 }
-å
 
 
 int XChunkSocketStream::gcount(){

@@ -13,6 +13,11 @@
 #include "Chunk.h"
 #include "Utility.h"
 
+const int CHUNK_WINDOW_SIZE = 10;
+
+//TODO: WHY?
+const int REPLY_MAX_SIZE = 512;
+
 const int CHUNK_QUEUE_THRESHOLD_SIZE = 30;
 
 // Thread will continually check the queue to see if it needs to fetch more chunks
@@ -51,7 +56,7 @@ Chunk* ChunkFetcher::getNextChunkFromQueue(){
     // Otherwise, idle around and wait for chunks to get fetched
     while(chunkQueue->size() == 0){
         cout << "Waiting for Queue to get refilled" << endl;
-        sleep(NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK);
+        thread_sleep(NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK);
     }
     
     Chunk* chunkToReturn = chunkQueue->front();
@@ -70,8 +75,10 @@ void* ChunkFetcher::fetchChunks(void* chunkFetcher_){
         }
         
         cout << "Sleeping before we check queue size again" << endl;
-        sleep(  NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING);
+        thread_sleep(  NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING);
     }
+
+    return NULL;
 }
 
 

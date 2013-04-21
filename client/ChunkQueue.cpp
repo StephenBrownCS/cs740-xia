@@ -2,6 +2,8 @@
 #include <iostream>
 #include <pthread.h>
 #include <cassert>
+#include <cstdlib>
+
 #include "ChunkQueue.h"
 
 using namespace std;

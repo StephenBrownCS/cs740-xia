@@ -47,7 +47,7 @@ int sendCmd(int sock, const char *cmd)
     return n;
 }
 
-void sleep(double numSeconds){
+void thread_sleep(double numSeconds){
     const int NUM_NANOSECONDS_IN_A_SECOND = 1000000000;
 
     struct timespec tim, tim2;
