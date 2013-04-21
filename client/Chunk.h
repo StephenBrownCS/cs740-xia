@@ -1,4 +1,6 @@
 
+#ifndef CHUNK_H_
+#define CHUNK_H_
 
 class Chunk{
 private:
@@ -19,3 +21,5 @@ private:
     Chunk(Chunk & other);
     Chunk & operator=(Chunk & other);
 };
+
+#endif

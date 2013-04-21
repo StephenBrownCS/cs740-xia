@@ -17,4 +17,7 @@ void die(int ecode, const char *fmt, ...);
 */
 int sendCmd(int sock, const char *cmd);
 
+
+void sleep(double numSeconds);
+
 #endif
