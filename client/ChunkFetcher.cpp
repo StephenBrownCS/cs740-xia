@@ -25,7 +25,8 @@ const double NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING = 0.2;
 
 // When the chunkQueue is empty, and the user is waiting for a new chunk to become 
 // available, this is the time we tell them to wait for
-const double NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK = 0.2;
+// Note that this sleep time will directly sleep the thread playing the video
+const double NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK = 0.0001;
 
 using namespace std;
 
