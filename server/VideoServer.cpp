@@ -96,8 +96,8 @@ char *createDAG(const char *ad, const char *host, const char *id);
 int main(int argc, char *argv[])
 {
     int sock;
-    char myAD[1024]; 
-    char myHID[1024];   
+    //char myAD[1024]; 
+    //char myHID[1024];   
 
     getConfig(argc, argv);
 
@@ -178,10 +178,10 @@ void *processRequest (void *socketid)
         cout << "Got request: " << SIDReqStr << endl;
         // if the request is about number of chunks return number of chunks
         // since this is first time, you would return along with header
-        int found = SIDReqStr.find("numchunks");
+        unsigned int found = SIDReqStr.find("numchunks");
 
         // If Request contains "numchunks", return number of CID's.
-        if(found != -1){
+        if(found != string::npos){
             cout << " Request asks for number of chunks " << endl;
             stringstream yy;
             yy << CIDlist.size();
@@ -191,7 +191,7 @@ void *processRequest (void *socketid)
             cout << "Sending back " << cidlistlen << endl;
             Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
         } 
-        else if(SIDReqStr.find("done") != -1){
+        else if(SIDReqStr.find("done") != string::npos){
             clientSignaledToClose = true;
         }
         else {

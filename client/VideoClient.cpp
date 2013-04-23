@@ -18,9 +18,6 @@ using namespace std;
 #define TITLE "XIA Chunk File Client"
 #define SERVER_NAME "www_s.video.com.xia"
 
-
-const int REPLY_MAX_SIZE = 512;
-
 // global configuration options
 int VERBOSE = 1;
 char *SERVER_AD;
