@@ -10,6 +10,7 @@
 #include "Utility.h"
 #include "XChunkSocketStream.h"
 #include "PloggOggDecoder.h"
+#include "ClientConfig.h"
 
 using namespace std;
 
@@ -17,12 +18,7 @@ using namespace std;
 #define TITLE "XIA Chunk File Client"
 #define SERVER_NAME "www_s.video.com.xia"
 
-// TODO: THIS IS NOT THE ONLY PLACE WHERE THESE CONSTANTS ARE MADE
-// NEED TO CREATE SEPARATE CONSTANTS OR CONFIG FILE
 
-const int CHUNK_WINDOW_SIZE = 1;
-
-//TODO: WHY?
 const int REPLY_MAX_SIZE = 512;
 
 // global configuration options
@@ -52,22 +48,11 @@ void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
 // ***************************************************************************
 
 int main(){
-    int sock, chunkSock;
-    int offset;
-    char *p;
-    const char *srcFile;
-    const char *destFile;
-    char cmd[512];
-    int status = 0;
+    int sock;
 
     say ("\n%s (%s): started\n", TITLE, VERSION);
 
-    // Hard-coded for now
-    srcFile = "inputFile";
-    destFile = "destFile";
-
     // Get the DAG for the Server
-    
     sockaddr_x server_dag;
     socklen_t dag_length = sizeof(server_dag);
     if (XgetDAGbyName(SERVER_NAME, &server_dag, &dag_length) < 0){
@@ -91,7 +76,7 @@ int main(){
     char sdag[1024];
     strncpy(sdag, g.dag_string().c_str(), sizeof(sdag));
     SERVER_AD = strstr(sdag, "AD:");
-    p = strchr(SERVER_AD, ' ');
+	char* p = strchr(SERVER_AD, ' ');
     *p = 0;
     SERVER_HID = p + 1;
     SERVER_HID = strstr(SERVER_HID, "HID:");
@@ -100,6 +85,7 @@ int main(){
 
     // send the request for the number of chunks
     cout << "Sending request for number of chunks" << endl;
+    char cmd[512];
     sprintf(cmd, "get %s",  "numchunks");
     sendCmd(sock, cmd);
     
@@ -116,7 +102,7 @@ int main(){
     say("shutting down\n");
     sendCmd(sock, "done");
     Xclose(sock);
-    return status;
+    return 0;
 }
 
 
