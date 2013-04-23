@@ -12,21 +12,9 @@
 #include "ChunkQueue.h"
 #include "Chunk.h"
 #include "Utility.h"
+#include "ClientConfig.h"
 
-const int CHUNK_WINDOW_SIZE = 10;
 
-//TODO: WHY?
-const int REPLY_MAX_SIZE = 512;
-
-const int CHUNK_QUEUE_THRESHOLD_SIZE = 100;
-
-// Thread will continually check the queue to see if it needs to fetch more chunks
-const double NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING = 0.2;
-
-// When the chunkQueue is empty, and the user is waiting for a new chunk to become 
-// available, this is the time we tell them to wait for
-// Note that this sleep time will directly sleep the thread playing the video
-const double NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK = 0.0001;
 
 using namespace std;
 
