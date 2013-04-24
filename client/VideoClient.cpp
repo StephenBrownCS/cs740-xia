@@ -83,9 +83,8 @@ int main(){
 
     // send the request for the number of chunks
     cout << "Sending request for number of chunks" << endl;
-    char cmd[512];
-    sprintf(cmd, "get %s",  "numchunks " + videoName);
-    sendCmd(sock, cmd);
+    string numChunksReqStr = "get numchunks " + videoName;
+    sendCmd(sock, numChunksReqStr.c_str());
     
     // GET NUMBER OF CHUNKS
     // Receive the reply string

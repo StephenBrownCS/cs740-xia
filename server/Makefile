@@ -1,5 +1,6 @@
 include ../../xia-core/xia.mk
 
+CFLAGS += -g
 LDFLAGS += $(LIBS)
 
 all: VideoServer ContentServer CidDirectoryServer
