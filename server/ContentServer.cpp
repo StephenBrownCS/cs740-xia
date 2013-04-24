@@ -40,12 +40,10 @@ string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.o
 
 int main(int argc, char *argv[])
 {
-    int sock;
     // put the video file into the content cache
     if (uploadContent(VIDEO_NAME.c_str()) != 0){
         die(-1, "Unable to upload the video %s\n", VIDEO_NAME.c_str());
     }
-
     return 0;
 }
 

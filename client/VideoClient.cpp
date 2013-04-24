@@ -46,6 +46,7 @@ void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
 
 int main(){
     int sock;
+	string videoName = "BigBuckBunny"; //Hard-coded
 
     say ("\n%s (%s): started\n", TITLE, VERSION);
 
@@ -83,7 +84,7 @@ int main(){
     // send the request for the number of chunks
     cout << "Sending request for number of chunks" << endl;
     char cmd[512];
-    sprintf(cmd, "get %s",  "numchunks");
+    sprintf(cmd, "get %s",  "numchunks " + videoName);
     sendCmd(sock, cmd);
     
     // GET NUMBER OF CHUNKS

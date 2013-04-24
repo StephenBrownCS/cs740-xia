@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <vector>
+#include <map>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -29,12 +30,33 @@ using namespace std;
 string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
 //string VIDEO_NAME = "../../small.ogv";
 
-vector<string> CIDlist;
+map<string, vector<string>* > CIDlist;
+vector<string> videoList;
 
 /*
 ** handle the request from the client and return the requested data
 */
 static void *processRequest (void *socketid);
+
+
+/**
+ * Returns true if the string indicates a request for 
+ * the number of chunks for a certain video.
+*/
+bool isNumChunksRequest(string requestStr);
+
+/**
+ * Returns true if the string indicates a request for the 
+ * the connection to terminate.
+*/
+bool isTerminationRequest(string requestStr);
+
+/**
+ * Returns true if the string indicates a request for the list
+ * of videos
+*/
+bool isVideoSelectionRequest(string requestStr);
+
 
 /*
 ** display cmd line options and exit
@@ -57,8 +79,6 @@ static void readInCIDLists();
 int main(int argc, char *argv[])
 {
     int sock;
-    //char myAD[1024]; 
-    //char myHID[1024];   
 
     getConfig(argc, argv);
 
@@ -113,7 +133,7 @@ void *processRequest (void *socketid)
     int n;
     int *sock = (int*)socketid;
     int acceptSock = *sock; 
-
+	string videoName;
 
     bool clientSignaledToClose = false;
 
@@ -124,10 +144,9 @@ void *processRequest (void *socketid)
         //Receive packet
         say("Receiving packet...\n");
         if ((n = Xrecv(acceptSock, SIDReq, sizeof(SIDReq), 0)) <= 0) {
-            cout << "Xrecv failed!" << endl;
+            cerr << "Xrecv failed!" << endl;
             Xclose(acceptSock);
             delete sock;
-            pthread_exit(NULL);
             return NULL;
         }
 
@@ -135,22 +154,48 @@ void *processRequest (void *socketid)
         cout << "Got request: " << SIDReqStr << endl;
         // if the request is about number of chunks return number of chunks
         // since this is first time, you would return along with header
-        unsigned int found = SIDReqStr.find("numchunks");
 
         // If Request contains "numchunks", return number of CID's.
-        if(found != string::npos){
-            cout << " Request asks for number of chunks " << endl;
-            stringstream yy;
-            yy << CIDlist.size();
-            string cidlistlen = yy.str();
+        if(isNumChunksRequest(SIDReqStr)){
+			// Get Video Name out of the request
+			istringstream iss(SIDReqStr);
+			string numChunks;
+			iss >> numChunks;
+			iss >> videoName;
+			
+			cout << " Request asks for number of chunks for " << videoName << endl;
+
+			//Figure out what video they would like
+			string cidlistlen = 0;
+            			
+			// Check to see if this video is the one that the user is looking for
+			if(CIDlist.find(videoName) != CIDlist.end()){
+				// Print the # of chunks to a String
+	            stringstream yy;
+	            yy << CIDlist[videoName]->size();
+	            cidlistlen = yy.str();
+			}
+			else{
+	            cerr << "Invalid Video Name: " << videoName << endl;
+	            Xclose(acceptSock);
+	            delete sock;
+	            return NULL;
+			}
 
             // Send back the number of CIDs
             cout << "Sending back " << cidlistlen << endl;
             Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
         } 
-        else if(SIDReqStr.find("done") != string::npos){
+        else if(isTerminationRequest(SIDReqStr)){
             clientSignaledToClose = true;
         }
+		else if(isVideoSelectionRequest(SIDReqStr){
+			for(vector<string>::iterator it = videoList.begin(); it != videoList.end(); ++it){
+				ostringstream oss;
+				oss << *it << " ";
+			}
+			Xsend(acceptSock,(void *) oss.c_str(), oss.length(), 0);
+		}
         else {
             // Otherwise, if the request was not about the number of chunks,
             // it must be a request for a certain chunk
@@ -177,7 +222,7 @@ void *processRequest (void *socketid)
             // return the list of CIDs, NOT including end_offset
             string requestedCIDlist = "";
             for(int i = start_offset; i < end_offset; i++){
-                requestedCIDlist += CIDlist[i] + " ";
+                requestedCIDlist += CIDlist[videoName]->[i] + " ";
             }       
             Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
             cout << "sending requested CID list: " << requestedCIDlist << endl;
@@ -186,12 +231,24 @@ void *processRequest (void *socketid)
 
     Xclose(acceptSock);
     delete sock;
-    pthread_exit(NULL);
+	return NULL;
 }
 
 
 
+bool isNumChunksRequest(string requestStr){
+	return requestStr.find("numchunks") != string::npos;
+}
 
+
+bool isTerminationRequest(string requestStr){
+	return requestStr.find("done") != string::npos;
+}
+
+
+bool isVideoSelectionRequest(string requestStr){
+	return requestStr.find("videos") != string::npos;
+}
 
 
 
@@ -237,13 +294,21 @@ void getConfig(int argc, char** argv)
 
 
 
-void readInCIDLists(){
-	ifstream infile("CIDs_BigBuckBunny.txt");
-	string CID_str;
-	while(infile >> CID_str){
-		CIDlist.push_back(CID_str);
+void readInCIDLists(){	
+	for(vector<string>::iterator it = videoList.begin(); it != videoList.end(); ++it){
+		string videoName = *it;
+		
+		// Create entry in our map of <Video Name to CID strings>
+		CIDlist[videoName] = new vector<string>();
+		
+		string fileName = "CIDs_" + videoName + ".txt";
+		ifstream infile(fileName.c_str());
+		string CID_str;
+		while(infile >> CID_str){
+			CIDlist[videoName]->push_back(CID_str);
+		}
+		infile.close();
 	}
-	infile.close();
 }
 
 
