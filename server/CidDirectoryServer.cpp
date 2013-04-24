@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 #include "Xsocket.h"
 #include "Utility.h"
 
@@ -25,45 +26,35 @@
 using namespace std;
 
 //GLOBAL CONFIGURATION OPTIONS
-int VERBOSE = 1;
 string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
 //string VIDEO_NAME = "../../small.ogv";
 
-// Container of CIDs
 vector<string> CIDlist;
-
 
 /*
 ** handle the request from the client and return the requested data
 */
-    void *processRequest (void *socketid);
+static void *processRequest (void *socketid);
 
 /*
 ** display cmd line options and exit
 */
-    void help(const char *name);
+static void help(const char *name);
 
 /*
 ** configure the app
 */
-    void getConfig(int argc, char** argv);
+static void getConfig(int argc, char** argv);
 
 /*
 ** simple code to create a formatted DAG
 **
 ** The dag should be free'd by the calling code when no longer needed
 */
-char *createDAG(const char *ad, const char *host, const char *id);
-
-/*
-** upload the video file as content chunks
-*/
-    int uploadContent(const char *fname);
+static char *createDAG(const char *ad, const char *host, const char *id);
 
 
-
-
-
+static void readInCIDLists();
 
 
 //***************************************************************************
@@ -78,10 +69,7 @@ int main(int argc, char *argv[])
 
     getConfig(argc, argv);
 
-    // put the video file into the content cache
-    if (uploadContent(VIDEO_NAME.c_str()) != 0){
-        die(-1, "Unable to upload the video %s\n", VIDEO_NAME.c_str());
-    }
+	readInCIDLists();
 
     // create a socket for listening on
     if ((sock = Xsocket(AF_XIA, SOCK_STREAM, 0)) < 0){
@@ -125,7 +113,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
 
 
 void *processRequest (void *socketid)
@@ -212,6 +199,11 @@ void *processRequest (void *socketid)
 
 
 
+
+
+
+
+
 void help(const char *name)
 {
     printf("\n%s (%s)\n", TITLE, VERSION);
@@ -250,7 +242,6 @@ void getConfig(int argc, char** argv)
     //HARD-CODED SO NO LONGER USED *****
 }
 
-
 char *createDAG(const char *ad, const char *host, const char *id)
 {
     int len = snprintf(NULL, 0, DAG, ad, host, id) + 1;
@@ -261,35 +252,14 @@ char *createDAG(const char *ad, const char *host, const char *id)
 }
 
 
-int uploadContent(const char *fname)
-{
-    int count;
 
-    say("loading video file: %s\n", fname);
-    cout << "Allocating cache slice" << endl;
-    ChunkContext *ctx = XallocCacheSlice(POLICY_DEFAULT, 0, 20000000);
-    if (ctx == NULL)
-        die(-2, "Unable to initilize the chunking system\n");
-
-    cout << "Putting the file..." << endl;
-    ChunkInfo *info;
-    if ((count = XputFile(ctx, fname, CHUNKSIZE, &info)) < 0)
-        die(-3, "unable to process the video file\n");
-
-    say("put %d chunks\n", count);
-
-    for (int i = 0; i < count; i++) {
-        string CID = "CID:";
-        CID += info[i].cid;
-        CIDlist.push_back(CID);
-    }
-
-    XfreeChunkInfo(info);
-
-    // close the connection to the cache slice, but becase it is set to retain,
-    // the content will stay available in the cache
-    XfreeCacheSlice(ctx);
-    return 0;
+void readInCIDLists(){
+	ifstream infile("CIDs_BigBuckBunny.txt");
+	string CID_str;
+	while(infile >> CID_str){
+		CIDlist.push_back(CID_str);
+	}
+	infile.close();
 }
 
 
