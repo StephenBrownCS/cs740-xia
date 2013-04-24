@@ -46,13 +46,6 @@ static void help(const char *name);
 */
 static void getConfig(int argc, char** argv);
 
-/*
-** simple code to create a formatted DAG
-**
-** The dag should be free'd by the calling code when no longer needed
-*/
-static char *createDAG(const char *ad, const char *host, const char *id);
-
 
 static void readInCIDLists();
 
@@ -240,15 +233,6 @@ void getConfig(int argc, char** argv)
 
     //VIDEO_NAME = argv[optind];
     //HARD-CODED SO NO LONGER USED *****
-}
-
-char *createDAG(const char *ad, const char *host, const char *id)
-{
-    int len = snprintf(NULL, 0, DAG, ad, host, id) + 1;
-
-    char * dag = (char*)malloc(len);
-    sprintf(dag, DAG, ad, host, id);
-    return dag;
 }
 
 
