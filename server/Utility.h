@@ -2,15 +2,12 @@
 #ifndef UTILITY_H_
 #define UTILITY_H_
 
-#include "Xsocket.h"
+#include <iostream>
+
 
 extern int VERBOSE;
 
-sockaddr_x* getOwnDag();
-string getOwnAd();
-string getOwnHid();
-string extractDagAd(sockaddr_x dagStr);
-string extractDagHid(sockaddr_x dagStr);
+void printHostInformation();
 
 /*
 ** write the message to stdout unless in quiet mode

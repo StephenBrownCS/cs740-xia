@@ -2,58 +2,32 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include "Utility.h"
+#include "Xsocket.h"
+//#include "dagaddr.hpp"
 
 using namespace std;
 
 int VERBOSE = 1;
 
-sockaddr_x* getOwnDag(){
-	struct addrinfo *addrInfo;
-	if (Xgetaddrinfo(NULL, SID_VIDEO, NULL, &addrInfo) < 0)
-	    die(-1, "Unable to create the local dag\n");
-
-	sockaddr_x* dag = (sockaddr_x*) addrInfo->ai_addr;
-	return dag;
-}
-
-string getOwnAd(){
-	sockaddr_x* dag = getOwnDag();
-	string ad = extractDagAd(*dag);
-	
-	//TODO may need to free dag here?
-	return ad;
-}
-
-string getOwnHid(){
-	sockaddr_x* dag = getOwnDag();
-	string hid = extractDagHid(*dag);
-	//TODO may ned to free dag here
-	return hid;
-}
 
 
-string extractDagAd(sockaddr_x dagStr){
-	Graph g(&dagStr);
-	string dag = g.dag_string();
+void printHostInformation(){
+	int sock;
+	if ((sock = Xsocket(AF_XIA, SOCK_STREAM, 0)) < 0){
+        die(-1, "Unable to create the listening socket\n");
+    }
+    
+    char adBuff[1024];
+    char hidBuff[1024];
+    char fourIdBuff[1024];
+	XreadLocalHostAddr(sock, adBuff, 1024, hidBuff, 1024, fourIdBuff, 1024);
 	
-	cout << "Dag String: " << dag << endl;
+	string ad(adBuff);
+	cout << "AD: " << adBuff << endl;
+	cout << "HID: " << hidBuff << endl;
+	cout << "4ID: " << fourIdBuff << endl;
 	
-	int beginPos = dag.find("AD:");
-	int endPos = dag.find(" ", beginPos);
-	dag = dag.substr(beginPos, endPos - beginPos);
-	
-	return dag;
-}
-
-string extractDagHid(sockaddr_x dagStr){
-	Graph g(&dagStr);
-	string dag = g.dag_string();
-	
-	int beginPos = dag.find("HID:");
-	int endPos = dag.find(" ", beginPos);
-	dag = dag.substr(beginPos, endPos - beginPos);
-	
-	return dag;
+	Xclose(sock);
 }
 
 

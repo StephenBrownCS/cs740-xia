@@ -13,6 +13,27 @@ using namespace std;
 const bool VERBOSE = true;
 const char* const TITLE = "";
 
+
+void printHostInformation(){
+	int sock;
+	if ((sock = Xsocket(AF_XIA, SOCK_STREAM, 0)) < 0){
+        die(-1, "Unable to create the listening socket\n");
+    }
+    
+    char adBuff[1024];
+    char hidBuff[1024];
+    char fourIdBuff[1024];
+	XreadLocalHostAddr(sock, adBuff, 1024, hidBuff, 1024, fourIdBuff, 1024);
+	
+	string ad(adBuff);
+	cout << "AD: " << adBuff << endl;
+	cout << "HID: " << hidBuff << endl;
+	cout << "4ID: " << fourIdBuff << endl;
+	
+	Xclose(sock);
+}
+
+
 void say(const char *fmt, ...)
 {
     if (VERBOSE) {

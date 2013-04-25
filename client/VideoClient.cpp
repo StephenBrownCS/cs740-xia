@@ -43,6 +43,8 @@ string extractDagHid(sockaddr_x dagStr);
 // ***************************************************************************
 
 int main(){
+    printHostInformation();
+    
     int sock;
 	string videoName = "BigBuckBunny"; //Hard-coded
 
