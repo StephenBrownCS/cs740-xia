@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <utility>
+#include "VideoInformation.h"
 
 class Chunk;
 class ChunkQueue;
@@ -21,25 +22,21 @@ class ChunkFetcher{
     // Descriptor to the socket we use to get our CID lists from
 	int xSocket;
 	
+	VideoInformation videoInformation;
+	
 	// Descriptor to our chunk socket, from which we get the actual data
 	int chunkSock;
-	
-	// Number of chunks in the file that we requested
-	int numChunksInFile;
 	
 	int nextChunkToRequest;
 	
 	// This flag is set to true when there are no more CIDs left to request
     volatile bool reachedEndOfFile;
-
-	const char* const SERVER_AD;
-	const char* const SERVER_HID;
 	
 	// Thread-safe Container which represents the next chunk
 	ChunkQueue* chunkQueue;
     
 public:
-    ChunkFetcher(int xSocket, int numChunksInFile, const char* serverAd, const char* serverHid);
+    ChunkFetcher(int xSocket, VideoInformation & videoInformation);
     
     /*
      * Destructor

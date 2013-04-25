@@ -16,18 +16,15 @@ using namespace std;
 
 
 
-XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile):
-    SERVER_AD(videoInformation.hosts),
-    SERVER_HID(serverHid)
+XChunkSocketStream::XChunkSocketStream(int xSocket, VideoInformation & videoInformation)
 {
-
     currentChunk = NULL;
     bytesReadByLastOperation = 0;
     numBytesReadFromCurrentChunk = 0;
     reachedEndOfFile = false;
     
     // CREATE CHUNK FETCHER WORKER THREAD
-    chunkFetcher = new ChunkFetcher(xSocket, numChunksInFile, serverAd, serverHid);
+    chunkFetcher = new ChunkFetcher(xSocket, videoInformation);
     pthread_t chunkFetcherThread;
     int ret = pthread_create(&chunkFetcherThread, NULL, 
                             ChunkFetcher::fetchChunks, (void *) chunkFetcher);

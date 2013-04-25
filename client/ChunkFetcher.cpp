@@ -13,18 +13,17 @@
 #include "Chunk.h"
 #include "Utility.h"
 #include "ClientConfig.h"
+#include "VideoInformation.h"
 
 
 
 using namespace std;
 
-ChunkFetcher::ChunkFetcher(int xSocket_, int numChunksInFile_, const char* serverAd, const char* serverHid):
+ChunkFetcher::ChunkFetcher(int xSocket_, VideoInformation & videoInformation_):
     xSocket(xSocket_),
-    numChunksInFile(numChunksInFile_),
+    videoInformation(videoInformation_),
     nextChunkToRequest(0),
     reachedEndOfFile(false),
-    SERVER_AD(serverAd),
-    SERVER_HID(serverHid)
 {
     // Create chunk socket
     // We will use this to receive chunks
@@ -91,7 +90,7 @@ void ChunkFetcher::fetchChunkWindow(){
 
 
 char* ChunkFetcher::retrieveCIDs(){
-    if(numChunksInFile <= nextChunkToRequest){
+    if(videoInformation.numChunks <= nextChunkToRequest){
         reachedEndOfFile = true;
         return NULL;
     }
@@ -100,8 +99,8 @@ char* ChunkFetcher::retrieveCIDs(){
     // GET LIST OF CIDs FROM SERVER
     // Determine how many chunks to ask for
     int numToReceive = CHUNK_WINDOW_SIZE;
-    if (numChunksInFile - nextChunkToRequest < numToReceive){
-        numToReceive = numChunksInFile - nextChunkToRequest;
+    if (videoInformation.numChunks - nextChunkToRequest < numToReceive){
+        numToReceive = videoInformation.numChunks - nextChunkToRequest;
     }
 
     // tell the server we want a list of <numToReceive> cids starting at location <offset>
@@ -140,7 +139,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         *next = 0;
 
         char* dag = (char *)malloc(512);
-        sprintf(dag, "RE ( %s %s ) %s", SERVER_AD, SERVER_HID, chunk_ptr);
+        sprintf(dag, "RE ( %s ) %s", videoInformation.hosts[0].c_str(), chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
         chunkStatuses[numChunks].cidLen = strlen(dag);
         chunkStatuses[numChunks].cid = dag;

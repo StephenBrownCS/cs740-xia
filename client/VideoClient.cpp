@@ -12,6 +12,7 @@
 #include "XChunkSocketStream.h"
 #include "PloggOggDecoder.h"
 #include "ClientConfig.h"
+#include "VideoInformation.h"
 
 using namespace std;
 
@@ -23,12 +24,6 @@ using namespace std;
 int VERBOSE = 1;
 
 
-struct VideoInformation{
-    int numChunks;
-    
-    // a list of AD-HIDs
-    vector<string> hosts;
-};
 
 
 

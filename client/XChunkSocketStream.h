@@ -15,8 +15,9 @@
 #include <utility>
 #include "Chunk.h"
 
-// Forward Reference
+// Forward References
 class ChunkFetcher;
+class VideoInformation;
 
 class XChunkSocketStream : public std::istream{
 private:
@@ -24,9 +25,6 @@ private:
 
     // Flag that is checked by good() and is set by retrieveCIDs
     bool reachedEndOfFile;
-
-	char* SERVER_AD;
-	char* SERVER_HID;
 	
 	ChunkFetcher* chunkFetcher;
 	
@@ -39,7 +37,7 @@ private:
 	
 public:
 	
-	XChunkSocketStream(int xSocket, VideoInformation videoInformation);
+	XChunkSocketStream(int xSocket, VideoInformation & videoInformation);
 	
 	/** Overridden method of istream
 	 * Returns the number of bytes read by the last operation
