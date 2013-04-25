@@ -78,6 +78,9 @@ static void readInCIDLists();
 
 int main(int argc, char *argv[])
 {
+	cout << getOwnAd() << endl;
+	cout << getOwnHid() << endl;
+	
     int sock;
 
     getConfig(argc, argv);
