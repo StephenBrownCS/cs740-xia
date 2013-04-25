@@ -188,7 +188,7 @@ void *processRequest (void *socketid)
 				response += " ";
 	
 				// Append on the list of Server AD-HIDs to the response
-				for(vector<string>::iter it = ContentServerXidList[videoName]->begin();
+				for(vector<string>::iterator it = ContentServerXidList[videoName]->begin();
 					it != ContentServerXidList["BigBuckBunny"]->end();
 					++it){
 						response += *it;
@@ -196,6 +196,7 @@ void *processRequest (void *socketid)
 	
 		        // Send back the number of CIDs followed by list of AD-HIDs
 	            cout << "Sending back " << response << endl;
+	            cout << "Response Length: " << response.length() << endl;
 	            Xsend(acceptSock,(void *) response.c_str(), response.length(), 0);
 			}
 			else{

@@ -16,8 +16,8 @@ using namespace std;
 
 
 
-XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile, const char* serverAd, const char* serverHid):
-    SERVER_AD(serverAd),
+XChunkSocketStream::XChunkSocketStream(int xSocket, int numChunksInFile):
+    SERVER_AD(videoInformation.hosts),
     SERVER_HID(serverHid)
 {
 

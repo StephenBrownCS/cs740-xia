@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <iostream>
+#include <sstream>
 #include "Xsocket.h"
 #include "dagaddr.hpp"
 #include "Utility.h"
@@ -21,11 +22,20 @@ using namespace std;
 // global configuration options
 int VERBOSE = 1;
 
+
+struct VideoInformation{
+    int numChunks;
+    
+    // a list of AD-HIDs
+    vector<string> hosts;
+};
+
+
+
 /*
 ** Receive number of chunks
 */
-int receiveVideoInformation(int sock);
-
+VideoInformation receiveVideoInformation(int sock);
 
 /**
  * Useful for debugging: prints the CID and status of each chunkStatus
@@ -77,11 +87,11 @@ int main(){
     sendCmd(sock, numChunksReqStr.c_str());
     
     // GET NUMBER OF CHUNKS
-    int numChunksInFile = receiveVideoInformation(sock);
-    cout << "Received number of chunks: " << numChunksInFile << endl;
+    VideoInformation videoInformation = receiveVideoInformation(sock);
+    cout << "Received number of chunks: " << videoInformation.numChunks << endl;
 
     // STREAM THE VIDEO
-    XChunkSocketStream chunkSocketStream(sock, numChunksInFile, serverAd.c_str(), serverHid.c_str());
+    XChunkSocketStream chunkSocketStream(sock, videoInformation);
     PloggOggDecoder oggDecoder;
     oggDecoder.play(chunkSocketStream);   
 
@@ -93,31 +103,36 @@ int main(){
 
 
 
-int receiveVideoInformation(int sock)
+VideoInformation receiveVideoInformation(int sock)
 {
     char* buffer = new char[REPLY_MAX_SIZE];
     
     // Receive (up to) size bytes from the socket, write to reply
-    if (Xrecv(sock, buffer, sizeof(buffer), 0)  < 0) {
+    if (Xrecv(sock, buffer, REPLY_MAX_SIZE, 0)  < 0) {
         Xclose(sock);
         die(-1, "Unable to communicate with the server\n");
     }
 
+    cout << buffer << endl;
 	string buffer_str(buffer);
 	stringstream ss(buffer_str);
 	string numChunks;
 	ss >> numChunks;
 	cout << numChunks;
 	
+	VideoInformation videoInformation;
+    result.numChunks = atoi(numChunks.c_str());
+	
 	string ad, hid;
 	while (ss >> ad >> hid){
 		cout << ad << endl;
 		cout << hid << endl;
+		result.hosts.push_back(ad + " " + hid);
 	} 
 
-    int numberOfChunks = atoi(numChunks);
+
     delete[] buffer;
-    return numberOfChunks;
+    return videoInformation;
 }
 
 

@@ -25,8 +25,8 @@ private:
     // Flag that is checked by good() and is set by retrieveCIDs
     bool reachedEndOfFile;
 
-	const char* const SERVER_AD;
-	const char* const SERVER_HID;
+	char* SERVER_AD;
+	char* SERVER_HID;
 	
 	ChunkFetcher* chunkFetcher;
 	
@@ -39,7 +39,7 @@ private:
 	
 public:
 	
-	XChunkSocketStream(int xSocket, int numChunksInFile, const char* serverAd, const char* serverHid);
+	XChunkSocketStream(int xSocket, VideoInformation videoInformation);
 	
 	/** Overridden method of istream
 	 * Returns the number of bytes read by the last operation
