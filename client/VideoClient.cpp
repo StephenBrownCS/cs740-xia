@@ -20,10 +20,6 @@ using namespace std;
 
 // global configuration options
 int VERBOSE = 1;
-char *SERVER_AD;
-char *SERVER_HID;
-
-
 
 /*
 ** Receive number of chunks
@@ -37,8 +33,9 @@ int receiveNumberOfChunks(int sock);
 */
 void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
 
-string extractDagAd(char* dagStr);
+string extractDagAd(sockaddr_x dagStr);
 
+string extractDagHid(sockaddr_x dagStr);
 
 
 // ***************************************************************************
@@ -69,18 +66,8 @@ int main(){
          die(-1, "Unable to bind to the dag: %s\n", server_dag);
     }
 
-    // save the AD and HID for later. This seems hacky
-    // we need to find a better way to deal with this
-    Graph g(&server_dag);
-    char sdag[1024];
-    strncpy(sdag, g.dag_string().c_str(), sizeof(sdag));
-    SERVER_AD = strstr(sdag, "AD:");
-	char* p = strchr(SERVER_AD, ' ');
-    *p = 0;
-    SERVER_HID = p + 1;
-    SERVER_HID = strstr(SERVER_HID, "HID:");
-    p = strchr(SERVER_HID, ' ');
-    *p = 0;
+    string serverAd = extractDagAd(server_dag);
+    string serverHid = extractDagHid(server_dag);
 
     // send the request for the number of chunks
     cout << "Sending request for number of chunks" << endl;
@@ -93,7 +80,7 @@ int main(){
     cout << "Received number of chunks: " << numChunksInFile << endl;
 
     // STREAM THE VIDEO
-    XChunkSocketStream chunkSocketStream(sock, numChunksInFile, SERVER_AD, SERVER_HID);
+    XChunkSocketStream chunkSocketStream(sock, numChunksInFile, serverAd.c_str(), serverHid.c_str());
     PloggOggDecoder oggDecoder;
     oggDecoder.play(chunkSocketStream);   
 
@@ -130,14 +117,27 @@ void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks){
 }
 
 
-string extractDagAd(char* dagStr){
+string extractDagAd(sockaddr_x dagStr){
 	Graph g(&dagStr);
 	string dag = g.dag_string();
 	
 	int beginPos = dag.find("AD:");
-	int endPos = dag.find(" ");
-	dag = dag.substr(beginPos, endPos);
+	int endPos = dag.find(" ", beginPos);
+	dag = dag.substr(beginPos, endPos - beginPos);
 	
 	return dag;
 }
+
+string extractDagHid(sockaddr_x dagStr){
+	Graph g(&dagStr);
+	string dag = g.dag_string();
+	
+	int beginPos = dag.find("HID:");
+	int endPos = dag.find(" ", beginPos);
+	dag = dag.substr(beginPos, endPos - beginPos);
+	
+	return dag;
+}
+
+
 
