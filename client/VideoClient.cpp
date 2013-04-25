@@ -24,7 +24,7 @@ int VERBOSE = 1;
 /*
 ** Receive number of chunks
 */
-int receiveNumberOfChunks(int sock);
+int receiveVideoInformation(int sock);
 
 
 /**
@@ -77,8 +77,7 @@ int main(){
     sendCmd(sock, numChunksReqStr.c_str());
     
     // GET NUMBER OF CHUNKS
-    // Receive the reply string
-    int numChunksInFile = receiveNumberOfChunks(sock);
+    int numChunksInFile = receiveVideoInformation(sock);
     cout << "Received number of chunks: " << numChunksInFile << endl;
 
     // STREAM THE VIDEO
@@ -94,7 +93,7 @@ int main(){
 
 
 
-int receiveNumberOfChunks(int sock)
+int receiveVideoInformation(int sock)
 {
     char* buffer = new char[REPLY_MAX_SIZE];
     
@@ -104,7 +103,19 @@ int receiveNumberOfChunks(int sock)
         die(-1, "Unable to communicate with the server\n");
     }
 
-    int numberOfChunks = atoi(buffer);
+	string buffer_str(buffer);
+	stringstream ss(buffer_str);
+	string numChunks;
+	ss >> numChunks;
+	cout << numChunks;
+	
+	string ad, hid;
+	while (ss >> ad >> hid){
+		cout << ad << endl;
+		cout << hid << endl;
+	} 
+
+    int numberOfChunks = atoi(numChunks);
     delete[] buffer;
     return numberOfChunks;
 }

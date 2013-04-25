@@ -31,7 +31,11 @@ string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.o
 //string VIDEO_NAME = "../../small.ogv";
 
 map<string, vector<string>* > CIDlist;
+map<string, vector<string>* > ContentServerXidList;
 vector<string> videoList;
+
+// Hard-coded list of locations where to find Big Buck Bunny content
+const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000002 HID:0000000000000000000000000000000000000002";
 
 /*
 ** handle the request from the client and return the requested data
@@ -86,6 +90,8 @@ int main(int argc, char *argv[])
 
     // Initialize our list of videos
     videoList.push_back("BigBuckBunny");
+	ContentServerXidList["BigBuckBunny"] = new vector<string>();
+	ContentServerXidList["BigBuckBunny"]->push_back(BIG_BUCK_BUNNY_CONTENT_SERVER_1);
 
     // Read in the CID lists for each video from disk
     readInCIDLists();
@@ -173,14 +179,24 @@ void *processRequest (void *socketid)
             			
 			// Check to see if this video is the one that the user is looking for
 			if(CIDlist.find(videoName) != CIDlist.end()){
-				// Print the # of chunks to a String
+				// Add the number of chunks to the string
 	            stringstream yy;
 	            yy << CIDlist[videoName]->size();
-	            string cidlistlen = yy.str();
+	            string response = yy.str();
 	
-		        // Send back the number of CIDs
-	            cout << "Sending back " << cidlistlen << endl;
-	            Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
+	            // Add a character of whitespace to the response
+				response += " ";
+	
+				// Append on the list of Server AD-HIDs to the response
+				for(vector<string>::iter it = ContentServerXidList[videoName]->begin();
+					it != ContentServerXidList["BigBuckBunny"]->end();
+					++it){
+						response += *it;
+				}
+	
+		        // Send back the number of CIDs followed by list of AD-HIDs
+	            cout << "Sending back " << response << endl;
+	            Xsend(acceptSock,(void *) response.c_str(), response.length(), 0);
 			}
 			else{
 	            cerr << "Invalid Video Name: " << videoName << endl;
