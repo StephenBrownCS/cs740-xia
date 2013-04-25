@@ -168,14 +168,17 @@ void *processRequest (void *socketid)
 			cout << " Request asks for number of chunks: " << videoName << endl;
 
 			//Figure out what video they would like
-			string cidlistlen;
             			
 			// Check to see if this video is the one that the user is looking for
 			if(CIDlist.find(videoName) != CIDlist.end()){
 				// Print the # of chunks to a String
 	            stringstream yy;
 	            yy << CIDlist[videoName]->size();
-	            cidlistlen = yy.str();
+	            string cidlistlen = yy.str();
+	
+		        // Send back the number of CIDs
+	            cout << "Sending back " << cidlistlen << endl;
+	            Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
 			}
 			else{
 	            cerr << "Invalid Video Name: " << videoName << endl;
@@ -183,10 +186,6 @@ void *processRequest (void *socketid)
 	            delete sock;
 	            return NULL;
 			}
-
-            // Send back the number of CIDs
-            cout << "Sending back " << cidlistlen << endl;
-            Xsend(acceptSock,(void *) cidlistlen.c_str(), cidlistlen.length(), 0);
         } 
         else if(isTerminationRequest(SIDReqStr)){
             clientSignaledToClose = true;

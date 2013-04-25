@@ -37,6 +37,7 @@ int receiveNumberOfChunks(int sock);
 */
 void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
 
+string extractDagAd(char* dagStr);
 
 
 
@@ -126,5 +127,17 @@ void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks){
         cout << curChunkStatus->cid << ": " << curChunkStatus->status << endl;
         curChunkStatus++;
     }
+}
+
+
+string extractDagAd(char* dagStr){
+	Graph g(&dagStr);
+	string dag = g.dag_string();
+	
+	int beginPos = dag.find("AD:");
+	int endPos = dag.find(" ");
+	dag = dag.substr(beginPos, endPos);
+	
+	return dag;
 }
 
