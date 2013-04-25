@@ -82,7 +82,11 @@ int main(int argc, char *argv[])
 
     getConfig(argc, argv);
 
-	readInCIDLists();
+    // Initialize our list of videos
+    videoList.push_back("BigBuckBunny");
+
+    // Read in the CID lists for each video from disk
+    readInCIDLists();
 
     // create a socket for listening on
     if ((sock = Xsocket(AF_XIA, SOCK_STREAM, 0)) < 0){
@@ -158,15 +162,13 @@ void *processRequest (void *socketid)
         // If Request contains "numchunks", return number of CID's.
         if(isNumChunksRequest(SIDReqStr)){
 			// Get Video Name out of the request
-			istringstream iss(SIDReqStr);
-			string numChunks;
-			iss >> numChunks;
-			iss >> videoName;
+			string prefix = "get numchunks ";
+			videoName = SIDReqStr.substr(prefix.length());
 			
-			cout << " Request asks for number of chunks for " << videoName << endl;
+			cout << " Request asks for number of chunks: " << videoName << endl;
 
 			//Figure out what video they would like
-			string cidlistlen = 0;
+			string cidlistlen;
             			
 			// Check to see if this video is the one that the user is looking for
 			if(CIDlist.find(videoName) != CIDlist.end()){
@@ -189,12 +191,13 @@ void *processRequest (void *socketid)
         else if(isTerminationRequest(SIDReqStr)){
             clientSignaledToClose = true;
         }
-		else if(isVideoSelectionRequest(SIDReqStr){
+		else if(isVideoSelectionRequest(SIDReqStr)){
+			ostringstream oss;
 			for(vector<string>::iterator it = videoList.begin(); it != videoList.end(); ++it){
-				ostringstream oss;
+
 				oss << *it << " ";
 			}
-			Xsend(acceptSock,(void *) oss.c_str(), oss.length(), 0);
+			Xsend(acceptSock,(void *) oss.str().c_str(), oss.str().length(), 0);
 		}
         else {
             // Otherwise, if the request was not about the number of chunks,
@@ -222,7 +225,7 @@ void *processRequest (void *socketid)
             // return the list of CIDs, NOT including end_offset
             string requestedCIDlist = "";
             for(int i = start_offset; i < end_offset; i++){
-                requestedCIDlist += CIDlist[videoName]->[i] + " ";
+                requestedCIDlist += CIDlist[videoName]->at(i) + " ";
             }       
             Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
             cout << "sending requested CID list: " << requestedCIDlist << endl;
