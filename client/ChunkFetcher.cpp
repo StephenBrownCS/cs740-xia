@@ -23,7 +23,7 @@ ChunkFetcher::ChunkFetcher(int xSocket_, VideoInformation & videoInformation_):
     xSocket(xSocket_),
     videoInformation(videoInformation_),
     nextChunkToRequest(0),
-    reachedEndOfFile(false),
+    reachedEndOfFile(false)
 {
     // Create chunk socket
     // We will use this to receive chunks
@@ -132,7 +132,6 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
     // Number of chunks in the CID List that we assemble
     int numChunks = 0;
 
-    cout << "Getting File Data" << endl;
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     char* next = NULL;
     while ((next = strchr(chunk_ptr, ' '))) {
@@ -149,8 +148,6 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         chunk_ptr = next + 1;
     }
 
-    cout << "numChunks: " << numChunks << endl;
-
     // Add the last chunk CID onto the end of the CID chunkStatus list
     // Commented this out since it was causing 11 things to get requested when should be 10
     // {
@@ -164,7 +161,6 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
 
 
     // BRING LIST OF CHUNKS LOCAL
-    cout << "requesting list of " << numChunks << " chunks" << endl;
     if (XrequestChunks(chunkSock, chunkStatuses, numChunks) < 0) {
         cerr << "unable to request chunks" << endl;
         return -1;
@@ -172,7 +168,6 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
 
 
     // IDLE AROUND UNTIL ALL CHUNKS ARE READY
-    cout << "checking chunk status\n";
     while (1) {
         int status = XgetChunkStatuses(chunkSock, chunkStatuses, numChunks);
         //printChunkStatuses(chunkStatuses, numChunks);
@@ -191,14 +186,10 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         sleep(1);
     }
 
-    cout << "all chunks ready\n";
-
-
     // RECEIVE EACH CHUNK
     for (int i = 0; i < numChunks; i++) {
         char *cid = strrchr(chunkStatuses[i].cid, ':');
         cid++;
-        cout << "reading chunk " << cid << endl;
 
         char chunkData[XIA_MAXCHUNK];
         memset(chunkData, 0, XIA_MAXCHUNK);
@@ -209,7 +200,6 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
             cout << "error getting chunk\n";
             return -1;
         }
-        cout << "len: " << len << endl;
 
         chunkQueue->push(new Chunk(chunkData, len));
 

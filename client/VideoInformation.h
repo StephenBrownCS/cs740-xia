@@ -1,4 +1,7 @@
 
+#ifndef VIDEO_INFORMATION_H_
+#define VIDEO_INFORMATION_H_
+
 #include <string>
 #include <vector>
 
@@ -7,5 +10,8 @@ struct VideoInformation{
     int numChunks;
     
     // a list of AD-HIDs
-    vector<string> hosts;
+    std::vector<std::string> hosts;
 };
+
+#endif
+

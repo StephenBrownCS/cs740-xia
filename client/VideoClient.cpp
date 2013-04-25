@@ -116,13 +116,13 @@ VideoInformation receiveVideoInformation(int sock)
 	cout << numChunks;
 	
 	VideoInformation videoInformation;
-    result.numChunks = atoi(numChunks.c_str());
+    videoInformation.numChunks = atoi(numChunks.c_str());
 	
 	string ad, hid;
 	while (ss >> ad >> hid){
 		cout << ad << endl;
 		cout << hid << endl;
-		result.hosts.push_back(ad + " " + hid);
+		videoInformation.hosts.push_back(ad + " " + hid);
 	} 
 
 
