@@ -120,7 +120,8 @@ VideoInformation receiveVideoInformation(int sock)
 	while (ss >> ad >> hid){
 		cout << ad << endl;
 		cout << hid << endl;
-		videoInformation.hosts.push_back(ad + " " + hid);
+		ServerLocation location(ad + hid);
+		videoInformation.addServerLocation(location);
 	} 
 
     delete[] buffer;

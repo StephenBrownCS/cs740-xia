@@ -162,7 +162,8 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
             *dag++ = *temp_ptr++;
         }
         
-        //sprintf(dag, "RE ( %s ) %s", videoInformation.hosts[0].c_str(), chunk_ptr);
+        // ServerLocation serverLocation = videoInformation.getServerLocation(0);
+        //sprintf(dag, "RE (AD:%s HID:%s ) %s", serverLocation.getAd().c_str(), serverLocation.getHid().c_str(), chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
         //chunkStatuses[numChunks].cidLen = strlen(dag);
         //chunkStatuses[numChunks].cid = dag;
