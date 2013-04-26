@@ -144,38 +144,36 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         cout << "Creating dag" << endl;
         char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
         
-        /*
+        // New Way using DAGs
+        // Add primary path
         Node n_src;
-        Node n_ad(Node::XID_TYPE_AD, "1000000000000000000000000000000000000000");
-        Node n_hid(Node::XID_TYPE_HID, "0000000000000000000000000000000000000000");
-        Node n_cid(Node::XID_TYPE_CID, chunk_ptr);
-        Graph g3 = n_src * n_ad * n_hid * n_cid;
+        Node n_ad(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
+        Node n_hid(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
+        Node n_cid(Node::XID_TYPE_CID, chunk_ptr + 4); // +4 since we don't want CID:
+        Graph g = n_src * n_ad * n_hid * n_cid;
         
-        Node n_ad2(Node::XID_TYPE_AD, "2000000000000000000000000000000000000000");
-        Node n_hid2(Node::XID_TYPE_HID, "2000000000000000000000000000000000000002");
-        Graph g2 = n_src * n_ad2 * n_hid2 * n_cid;
-        
-        //Graph g3 = g1;// + g2;
-        
-        cout << g3.dag_string() << endl;
-        
-        const char* g_ptr = g3.dag_string().c_str();
-        char* dag_ptr = dag;
-        for(int i = 0; i < g3.dag_string().length(); i++){
-            *dag_ptr++ = *g_ptr++;
+        // Add fall back paths
+        for(int i = 1; i < videoInformation.getNumServerLocations(); i++){
+            Node n_ad_backup(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
+            Node n_hid_backup(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
+            Graph fallbackGraph = n_src * n_ad_backup * n_hid_backup * n_cid;
+            g = g + fallbackGraph;
         }
-        */
         
-        cout << "It's Jon!" << endl;
+        cout << g.dag_string() << endl;
         
-        ServerLocation serverLocation = videoInformation.getServerLocation(0);
-        sprintf(dag, "RE ( AD:%s HID:%s ) %s", serverLocation.getAd().c_str(), serverLocation.getHid().c_str(), chunk_ptr);
+        strcpy(dag, g.dag_string().c_str());
+        chunkStatuses[numChunks].cidLen = g.dag_string().length();
+        chunkStatuses[numChunks].cid = dag;
+        
+        // Old Way using RE
+        //ServerLocation serverLocation = videoInformation.getServerLocation(0);
+        //sprintf(dag, "RE ( AD:%s HID:%s ) %s", serverLocation.getAd().c_str(), serverLocation.getHid().c_str(), chunk_ptr);
+
+        //chunkStatuses[numChunks].cidLen = strlen(dag);
+        //chunkStatuses[numChunks].cid = dag;
         cout << dag << endl;
         printf("getting %s\n", chunk_ptr);
-        chunkStatuses[numChunks].cidLen = strlen(dag);
-        chunkStatuses[numChunks].cid = dag;
-        //chunkStatuses[numChunks].cidLen = g3.dag_string().length();
-        //chunkStatuses[numChunks].cid = dag;
         numChunks++;
 
         // Set chunk_ptr to point to the next position (following the space)
@@ -193,7 +191,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
     //     numChunks++;
     // }
 
-    cout << "Bring local" << endl;
+
 
     // BRING LIST OF CHUNKS LOCAL
     if (XrequestChunks(chunkSock, chunkStatuses, numChunks) < 0) {
@@ -221,7 +219,6 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         sleep(1);
     }
 
-    cout << "All Chunks Ready " << endl;
 
     // RECEIVE EACH CHUNK
     for (int i = 0; i < numChunks; i++) {
