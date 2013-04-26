@@ -1,9 +1,15 @@
-/* ts=4 */
+
+/*
+	Video Client
+	This Video Client will stream video from the video server
+
+
+	Authors: Ben Bramble, Stephen Brown, and Big Buck Bunny
+*/
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <iostream>
 #include <sstream>
 #include "Xsocket.h"
@@ -16,15 +22,7 @@
 
 using namespace std;
 
-#define VERSION "v1.0"
-#define TITLE "XIA Chunk File Client"
-#define SERVER_NAME "www_s.video.com.xia"
-
-// global configuration options
-int VERBOSE = 1;
-
-
-
+const string SERVER_NAME = "www_s.video.com.xia"
 
 
 /*
@@ -38,9 +36,6 @@ VideoInformation receiveVideoInformation(int sock);
 */
 void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
 
-string extractDagAd(sockaddr_x dagStr);
-
-string extractDagHid(sockaddr_x dagStr);
 
 
 // ***************************************************************************
@@ -53,12 +48,10 @@ int main(){
     int sock;
 	string videoName = "BigBuckBunny"; //Hard-coded
 
-    say ("\n%s (%s): started\n", TITLE, VERSION);
-
     // Get the DAG for the Server
     sockaddr_x server_dag;
     socklen_t dag_length = sizeof(server_dag);
-    if (XgetDAGbyName(SERVER_NAME, &server_dag, &dag_length) < 0){
+    if (XgetDAGbyName(SERVER_NAME.c_str(), &server_dag, &dag_length) < 0){
         die(-1, "unable to locate: %s\n", SERVER_NAME);
     }
 
@@ -73,8 +66,10 @@ int main(){
          die(-1, "Unable to bind to the dag: %s\n", server_dag);
     }
 
-    string serverAd = extractDagAd(server_dag);
-    string serverHid = extractDagHid(server_dag);
+    // No longer needed, as client no longer retrieves the actual content 
+	// from the same server as the CID lists
+    //string serverAd = extractDagAd(server_dag);
+    //string serverHid = extractDagHid(server_dag);
 
     // send the request for the number of chunks
     cout << "Sending request for number of chunks" << endl;
@@ -108,7 +103,8 @@ VideoInformation receiveVideoInformation(int sock)
         die(-1, "Unable to communicate with the server\n");
     }
 
-    cout << buffer << endl;
+	//Format is <numChunks> <AD:XXXX> <HID:YYYY> ...
+	// Parse it!
 	string buffer_str(buffer);
 	stringstream ss(buffer_str);
 	string numChunks;
@@ -118,13 +114,14 @@ VideoInformation receiveVideoInformation(int sock)
 	VideoInformation videoInformation;
     videoInformation.numChunks = atoi(numChunks.c_str());
 	
+	// There may be multiple ad-hid's listed (multiple locations for 
+	// content servers)
 	string ad, hid;
 	while (ss >> ad >> hid){
 		cout << ad << endl;
 		cout << hid << endl;
 		videoInformation.hosts.push_back(ad + " " + hid);
 	} 
-
 
     delete[] buffer;
     return videoInformation;
@@ -138,29 +135,3 @@ void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks){
         curChunkStatus++;
     }
 }
-
-
-string extractDagAd(sockaddr_x dagStr){
-	Graph g(&dagStr);
-	string dag = g.dag_string();
-	
-	int beginPos = dag.find("AD:");
-	int endPos = dag.find(" ", beginPos);
-	dag = dag.substr(beginPos, endPos - beginPos);
-	
-	return dag;
-}
-
-string extractDagHid(sockaddr_x dagStr){
-	Graph g(&dagStr);
-	string dag = g.dag_string();
-	
-	int beginPos = dag.find("HID:");
-	int endPos = dag.find(" ", beginPos);
-	dag = dag.substr(beginPos, endPos - beginPos);
-	
-	return dag;
-}
-
-
-

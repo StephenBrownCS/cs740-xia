@@ -10,8 +10,7 @@
 
 using namespace std;
 
-const bool VERBOSE = true;
-const char* const TITLE = "";
+bool VERBOSE = true;
 
 
 void printHostInformation(){
@@ -52,7 +51,7 @@ void die(int ecode, const char *fmt, ...)
     va_start(args, fmt);
     vfprintf(stdout, fmt, args);
     va_end(args);
-    fprintf(stdout, "%s: exiting\n", TITLE);
+    fprintf(stdout, "exiting\n");
     exit(ecode);
 }
 
@@ -82,4 +81,30 @@ void thread_sleep(double numSeconds){
         cerr << "Unable to sleep" << endl;
         exit(-1);
     }
+}
+
+
+
+string extractDagAd(sockaddr_x dagStr){
+	Graph g(&dagStr);
+	string dag = g.dag_string();
+	
+	int beginPos = dag.find("AD:");
+	int endPos = dag.find(" ", beginPos);
+	dag = dag.substr(beginPos, endPos - beginPos);
+	
+	return dag;
+}
+
+
+
+string extractDagHid(sockaddr_x dagStr){
+	Graph g(&dagStr);
+	string dag = g.dag_string();
+	
+	int beginPos = dag.find("HID:");
+	int endPos = dag.find(" ", beginPos);
+	dag = dag.substr(beginPos, endPos - beginPos);
+	
+	return dag;
 }
