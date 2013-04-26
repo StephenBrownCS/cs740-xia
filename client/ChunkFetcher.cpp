@@ -15,7 +15,10 @@
 #include "ClientConfig.h"
 #include "VideoInformation.h"
 
-
+// Maximum length that hte CID DAG may be for any given chunk
+// May need to be lengthened with increasingly complex 
+// fallback routes
+const int MAX_LENGTH_OF_CID_DAG = 512;
 
 using namespace std;
 
@@ -137,10 +140,33 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
     while ((next = strchr(chunk_ptr, ' '))) {
         *next = 0;
 
-        char* dag = (char *)malloc(512);
-        sprintf(dag, "RE ( %s ) %s", videoInformation.hosts[0].c_str(), chunk_ptr);
+        // Create DAG for CID
+        char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
+        
+        Node n_src;
+        Node n_ad(Node::XID_TYPE_AD, "1000000000000000000000000000000000000000");
+        Node n_hid(Node::XID_TYPE_HID, "0000000000000000000000000000000000000000");
+        Node n_cid(Node::XID_TYPE_CID, chunk_ptr);
+        Graph g1 = n_src * n_ad * n_hid * n_cid;
+        
+        Node n_ad2(Node::XID_TYPE_AD, "2000000000000000000000000000000000000000");
+        Node n_hid2(Node::XID_TYPE_HID, "2000000000000000000000000000000000000002");
+        Graph g2 = n_src * n_ad2 * n_hid2 * n_cid;
+        
+        Graph g3 = g1 + g2;
+        
+        cout << g3.dag_string() << endl;
+        
+        const char* temp_ptr = g3.dag_string().c_str();
+        for(int i = 0; i < g3.dag_string().length(); i++){
+            *dag++ = *temp_ptr++;
+        }
+        
+        //sprintf(dag, "RE ( %s ) %s", videoInformation.hosts[0].c_str(), chunk_ptr);
         //printf("getting %s\n", chunk_ptr);
-        chunkStatuses[numChunks].cidLen = strlen(dag);
+        //chunkStatuses[numChunks].cidLen = strlen(dag);
+        //chunkStatuses[numChunks].cid = dag;
+        chunkStatuses[numChunks].cidLen = g3.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
         numChunks++;
 

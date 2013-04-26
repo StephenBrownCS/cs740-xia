@@ -22,7 +22,7 @@
 
 using namespace std;
 
-const string SERVER_NAME = "www_s.video.com.xia"
+const string SERVER_NAME = "www_s.video.com.xia";
 
 
 /*
@@ -52,7 +52,7 @@ int main(){
     sockaddr_x server_dag;
     socklen_t dag_length = sizeof(server_dag);
     if (XgetDAGbyName(SERVER_NAME.c_str(), &server_dag, &dag_length) < 0){
-        die(-1, "unable to locate: %s\n", SERVER_NAME);
+        die(-1, "unable to locate: %s\n", SERVER_NAME.c_str());
     }
 
     // create a STREAM socket
