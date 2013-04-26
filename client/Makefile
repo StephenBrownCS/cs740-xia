@@ -16,11 +16,11 @@ endif
 CFLAGS += -g
 LDFLAGS += $(LIBS)
 
-CLIENT_TARGETS = Utility Chunk XChunkSocketStream PloggOggDecoder ChunkQueue ChunkFetcher ClientConfig VideoClient VideoInformation
+CLIENT_TARGETS = Utility Chunk XChunkSocketStream PloggOggDecoder ChunkQueue ChunkFetcher ClientConfig VideoInformation VideoClient
 
 all:$(CLIENT_TARGETS)
 
-VideoClient: VideoClient.cpp Utility.h XChunkSocketStream.h ClientConfig.h PloggOggDecoder.h
+VideoClient: VideoClient.cpp Utility.h XChunkSocketStream.h ClientConfig.h PloggOggDecoder.h VideoInformation.h
 	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoClient.cpp Utility.o XChunkSocketStream.o PloggOggDecoder.o Chunk.o ChunkQueue.o ChunkFetcher.o ClientConfig.o VideoInformation.o $(LDFLAGS)
 
 Utility: Utility.h Utility.cpp
@@ -38,7 +38,7 @@ PloggOggDecoder: PloggOggDecoder.cpp PloggOggDecoder.h
 ChunkQueue: ChunkQueue.h ChunkQueue.cpp Chunk.h
 	g++ -Wall -Wextra $(CFLAGS) -c ChunkQueue.cpp
 
-ChunkFetcher: ChunkFetcher.h ChunkFetcher.cpp ChunkQueue.h ClientConfig.h
+ChunkFetcher: ChunkFetcher.h ChunkFetcher.cpp ChunkQueue.h ClientConfig.h VideoInformation.h
 	g++ -Wall -Wextra $(CFLAGS) -c ChunkFetcher.cpp
 
 ClientConfig: ClientConfig.h ClientConfig.cpp

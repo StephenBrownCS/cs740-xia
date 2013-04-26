@@ -4,15 +4,15 @@
 
 using namespace std;
 
-ServerLocation::ServerLocation(String protoDag){
+ServerLocation::ServerLocation(string protoDag){
     {
-        int beginPos = protoDag.find("AD:");
+        int beginPos = protoDag.find("AD:") + 3;
         int endPos = protoDag.find(" ", beginPos);
         ad = protoDag.substr(beginPos, endPos - beginPos);
 	}
 	
 	{
-        int beginPos = protoDag.find("HID:");
+        int beginPos = protoDag.find("HID:") + 4;
         int endPos = protoDag.find(" ", beginPos);
         hid = protoDag.substr(beginPos, endPos - beginPos);
     }

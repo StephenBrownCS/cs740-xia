@@ -109,18 +109,17 @@ VideoInformation receiveVideoInformation(int sock)
 	stringstream ss(buffer_str);
 	string numChunks;
 	ss >> numChunks;
-	cout << numChunks;
+	cout << "numChunks: " << numChunks << endl;
 	
-	VideoInformation videoInformation;
-    videoInformation.numChunks = atoi(numChunks.c_str());
+	VideoInformation videoInformation(atoi(numChunks.c_str()));
 	
 	// There may be multiple ad-hid's listed (multiple locations for 
 	// content servers)
 	string ad, hid;
 	while (ss >> ad >> hid){
-		cout << ad << endl;
-		cout << hid << endl;
-		ServerLocation location(ad + hid);
+		cout << "Ad: " << ad << endl;
+		cout << "Hid: " << hid << endl;
+		ServerLocation location(ad + " " + hid);
 		videoInformation.addServerLocation(location);
 	} 
 

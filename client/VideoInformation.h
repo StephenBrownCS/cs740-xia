@@ -9,14 +9,21 @@ class ServerLocation{
     std::string ad;
     std::string hid;
 public:
-    ServerLocation(String protoDag);
+    ServerLocation(std::string protoDag);
     
-    std::tring getAd(){
+    /**
+     * Returns the AD String without the AD: prefix
+    */
+    std::string getAd(){
         return ad;
     }
-    
+   
+   
+    /**
+     * Returns the Hid String without the HID: Prefix
+    */ 
     std::string getHid(){
-        return Hid;
+        return hid;
     }
 };
 
@@ -27,7 +34,7 @@ public:
 	// number of chunks for this video
     const int numChunks;
     
-    VideoInformation(numChunks_): numChunks(numChunks_) {}
+    VideoInformation(int numChunks_): numChunks(numChunks_) {}
     
     void addServerLocation(ServerLocation serverLocation);
     
