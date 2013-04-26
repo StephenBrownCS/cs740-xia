@@ -1,6 +1,8 @@
 #ifndef __UTILITY_H__
 #define __UTILITY_H__
 
+#include "Xsocket.h"
+
 extern bool VERBOSE;
 
 
@@ -31,12 +33,12 @@ void thread_sleep(double numSeconds);
  * Extract the Autonomous Domain ID from the dag
  * Returns the string, including the AD: prefix
 */
-string extractDagAd(sockaddr_x dagStr);
+std::string extractDagAd(sockaddr_x dagStr);
 
 /**
  * Extract the Host ID from the dag
  * Returns the string, including the HID: prefix
 */
-string extractDagHid(sockaddr_x dagStr);
+std::string extractDagHid(sockaddr_x dagStr);
 
 #endif
