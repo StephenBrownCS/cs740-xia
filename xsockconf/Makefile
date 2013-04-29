@@ -12,7 +12,8 @@ topology.o:
 bin.o:
 	cp bin_xsockconf.ini ../../xia-core/bin/xsockconf.ini
 	cp bin_xsockconf.ini ./xsockconf.ini
-
+	cp app_xsockconf.ini ../server/xsockconf.ini
+	cp app_xsockconf.ini ../client/xsockconf.ini
 # start the network. This will not work if click is already started
 initiate.o:
 	$(XIA-CORE)/xianet -s xia_video_topology.click start
