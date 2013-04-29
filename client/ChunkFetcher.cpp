@@ -144,6 +144,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         cout << "Creating dag" << endl;
         char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
         
+        /*
         // New Way using DAGs
         // Add primary path
         Node n_src;
@@ -152,10 +153,11 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         Node n_cid(Node::XID_TYPE_CID, chunk_ptr + 4); // +4 since we don't want CID:
         Graph g = n_src * n_ad * n_hid * n_cid;
         
+        cout << "num server locations: " << videoInformation.getNumServerLocations() << endl;
         // Add fall back paths
         for(int i = 1; i < videoInformation.getNumServerLocations(); i++){
-            Node n_ad_backup(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
-            Node n_hid_backup(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
+            Node n_ad_backup(Node::XID_TYPE_AD, videoInformation.getServerLocation(i).getAd().c_str());
+            Node n_hid_backup(Node::XID_TYPE_HID, videoInformation.getServerLocation(i).getHid().c_str());
             Graph fallbackGraph = n_src * n_ad_backup * n_hid_backup * n_cid;
             g = g + fallbackGraph;
         }
@@ -165,13 +167,14 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         strcpy(dag, g.dag_string().c_str());
         chunkStatuses[numChunks].cidLen = g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
+        */
         
         // Old Way using RE
-        //ServerLocation serverLocation = videoInformation.getServerLocation(0);
-        //sprintf(dag, "RE ( AD:%s HID:%s ) %s", serverLocation.getAd().c_str(), serverLocation.getHid().c_str(), chunk_ptr);
+        ServerLocation serverLocation = videoInformation.getServerLocation(0);
+        sprintf(dag, "RE ( AD:%s HID:%s ) %s", serverLocation.getAd().c_str(), serverLocation.getHid().c_str(), chunk_ptr);
 
-        //chunkStatuses[numChunks].cidLen = strlen(dag);
-        //chunkStatuses[numChunks].cid = dag;
+        chunkStatuses[numChunks].cidLen = strlen(dag);
+        chunkStatuses[numChunks].cid = dag;
         cout << dag << endl;
         printf("getting %s\n", chunk_ptr);
         numChunks++;
