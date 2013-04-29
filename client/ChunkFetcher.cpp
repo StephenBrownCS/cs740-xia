@@ -22,6 +22,14 @@ const int MAX_LENGTH_OF_CID_DAG = 512;
 
 using namespace std;
 
+
+/**
+ * Useful for debugging: prints the CID and status of each chunkStatus
+ *
+*/
+void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
+
+
 ChunkFetcher::ChunkFetcher(int xSocket_, VideoInformation & videoInformation_):
     xSocket(xSocket_),
     videoInformation(videoInformation_),
@@ -144,7 +152,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         cout << "Creating dag" << endl;
         char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
         
-        /*
+        
         // New Way using DAGs
         // Add primary path
         Node n_src;
@@ -161,14 +169,16 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
             Graph fallbackGraph = n_src * n_ad_backup * n_hid_backup * n_cid;
             g = g + fallbackGraph;
         }
-        
-        cout << g.dag_string() << endl;
-        
+               
         strcpy(dag, g.dag_string().c_str());
+        cout << dag << endl;
+        cout << "dag length: " << g.dag_string().length() << endl;
+        
         chunkStatuses[numChunks].cidLen = g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
-        */
         
+        
+        /*
         // Old Way using RE
         ServerLocation serverLocation = videoInformation.getServerLocation(0);
         sprintf(dag, "RE ( AD:%s HID:%s ) %s", serverLocation.getAd().c_str(), serverLocation.getHid().c_str(), chunk_ptr);
@@ -176,6 +186,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         chunkStatuses[numChunks].cidLen = strlen(dag);
         chunkStatuses[numChunks].cid = dag;
         cout << dag << endl;
+        */
         printf("getting %s\n", chunk_ptr);
         numChunks++;
 
@@ -218,6 +229,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         } else if (status == WAITING_FOR_CHUNK) {
             // one or more chunks aren't ready.
             cout << "waiting... one or more chunks aren't ready yet" << endl;
+            printChunkStatuses(chunkStatuses, numChunks);
         }
         sleep(1);
     }
@@ -315,3 +327,12 @@ int ChunkFetcher::numBytesReady(){
     return numBytesReady;
 }
 */
+
+void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks){
+    ChunkStatus* curChunkStatus = chunkStatuses;
+    for(int i = 0; i < numChunks; i++){
+        cout << curChunkStatus->cid << ": " << curChunkStatus->status << endl;
+        curChunkStatus++;
+    }
+}
+

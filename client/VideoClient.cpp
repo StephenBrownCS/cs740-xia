@@ -30,11 +30,6 @@ const string SERVER_NAME = "www_s.video.com.xia";
 */
 VideoInformation receiveVideoInformation(int sock);
 
-/**
- * Useful for debugging: prints the CID and status of each chunkStatus
- *
-*/
-void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks);
 
 
 
@@ -128,10 +123,4 @@ VideoInformation receiveVideoInformation(int sock)
 }
 
 
-void printChunkStatuses(ChunkStatus* chunkStatuses, int numChunks){
-    ChunkStatus* curChunkStatus = chunkStatuses;
-    for(int i = 0; i < numChunks; i++){
-        cout << curChunkStatus->cid << ": " << curChunkStatus->status << endl;
-        curChunkStatus++;
-    }
-}
+

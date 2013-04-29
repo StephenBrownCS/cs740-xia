@@ -22,7 +22,7 @@ void printHostInformation(){
     char fourIdBuff[1024];
 	XreadLocalHostAddr(sock, adBuff, 1024, hidBuff, 1024, fourIdBuff, 1024);
 	
-	string ad(adBuff);
+
 	cout << "AD: " << adBuff << endl;
 	cout << "HID: " << hidBuff << endl;
 	cout << "4ID: " << fourIdBuff << endl;

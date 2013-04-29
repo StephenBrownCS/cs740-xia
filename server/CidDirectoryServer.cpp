@@ -35,8 +35,8 @@ map<string, vector<string>* > ContentServerXidList;
 vector<string> videoList;
 
 // Hard-coded list of locations where to find Big Buck Bunny content
-const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000002 HID:0000000000000000000000000000000000000002";
-//const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000000 HID:0000000000000000000000000000000000000000";
+//const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000002 HID:0000000000000000000000000000000000000002";
+const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000000 HID:0000000000000000000000000000000000000000";
 
 /*
 ** handle the request from the client and return the requested data
@@ -83,7 +83,7 @@ static void readInCIDLists();
 
 int main(int argc, char *argv[])
 {
-	printHostInformation();
+	printHostInformation();	
 	
     int sock;
 
@@ -116,6 +116,16 @@ int main(int argc, char *argv[])
     if(Xbind(sock, (struct sockaddr*)dag, sizeof(sockaddr_x)) < 0){
         die(-1, "Unable to bind to the dag: %s\n", dag);
     }
+
+        char adBuff[1024];
+    char hidBuff[1024];
+    char fourIdBuff[1024];
+	XreadLocalHostAddr(sock, adBuff, 1024, hidBuff, 1024, fourIdBuff, 1024);
+	
+
+	cout << "AD: " << adBuff << endl;
+	cout << "HID: " << hidBuff << endl;
+	cout << "4ID: " << fourIdBuff << endl;
 
     // we're done with this
     Xfreeaddrinfo(addrInfo);
