@@ -5,7 +5,7 @@
 // support > 50 chunks at a time
 const int CHUNK_WINDOW_SIZE = 50;
 
-const int REPLY_MAX_SIZE = 512;
+const int REPLY_MAX_SIZE = 5120;
 
 const int CHUNK_QUEUE_THRESHOLD_SIZE = 500;
 

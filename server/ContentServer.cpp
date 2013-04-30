@@ -56,7 +56,7 @@ int uploadContent(const char *fname)
 
     say("loading video file: %s\n", fname);
     cout << "Allocating cache slice" << endl;
-    ChunkContext *ctx = XallocCacheSlice(POLICY_DEFAULT, 0, 20000000);
+    ChunkContext *ctx = XallocCacheSlice(POLICY_DEFAULT, 30, 20000000);
     if (ctx == NULL)
         die(-2, "Unable to initilize the chunking system\n");
 
