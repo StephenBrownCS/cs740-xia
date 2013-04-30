@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
 #include "Xsocket.h"
 #include "Utility.h"
 
@@ -27,6 +28,7 @@ using namespace std;
 string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
 //string VIDEO_NAME = "../../small.ogv";
 
+const int PERIOD_TO_SLEEP = 40;
 
 /*
 ** upload the video file as content chunks
@@ -76,11 +78,21 @@ int uploadContent(const char *fname)
     }
 	outfile.close();
 
+    // Sleep for some period of time, then clear the content cache
+    sleep(PERIOD_TO_SLEEP);
+    /*
+    cout << "Removing all CIDs" << endl;
+    for (int i = 0; i < count; i++) {
+        XremoveChunk(ctx, info[i].cid);
+    }
+*/
+
     XfreeChunkInfo(info);
 
     // close the connection to the cache slice, but becase it is set to retain,
     // the content will stay available in the cache
     XfreeCacheSlice(ctx);
+    
     return 0;
 }
 

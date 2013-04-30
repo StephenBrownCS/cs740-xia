@@ -120,6 +120,21 @@ char* ChunkFetcher::retrieveCIDs(){
     // block LHS:RHS [LHS, RHS) -- RHS is one past the range we want
     char cmd[512];
     sprintf(cmd, "block %d:%d", nextChunkToRequest, nextChunkToRequest + numToReceive);
+    
+    // Simulate Failover
+    /*
+    if(nextChunkToRequest < 205 && nextChunkToRequest > 195){
+        cout << "************* MOVING TO NEW AD ************" << endl;
+        int ret = XupdateAD(xSocket, "AD:1000000000000000000000000000000000000001", "IP:4500000000010000fafa0000000000000000000");
+        if (ret < 0){
+            cout << "AD migration failed" << endl;
+            exit(-1);
+        }
+        printHostInformation();
+        
+        
+    }
+    */
     sendCmd(cmd);
 
     // Server replies with "CID:" followed by a list of CIDs
@@ -170,6 +185,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         }
                
         strcpy(dag, g.dag_string().c_str());
+        cout << dag << endl;
         
         chunkStatuses[numChunks].cidLen = g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
