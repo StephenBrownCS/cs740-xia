@@ -3,14 +3,14 @@ include ../../xia-core/xia.mk
 CFLAGS += -g
 LDFLAGS += $(LIBS)
 
-all: VideoServer ContentServer CidDirectoryServer
+all: ContentServer CidDirectoryServer
 
 # Video Server - Both Content and Directory in one program
-VideoServer: VideoServer.o Utility.o
-	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoServer.o Utility.o $(LDFLAGS)
+#VideoServer: VideoServer.o Utility.o
+#	g++ -Wall -Wextra $(CFLAGS) -o $@ VideoServer.o Utility.o $(LDFLAGS)
 
-VideoServer.o: VideoServer.cpp Utility.h
-	g++ -Wall -Wextra $(CFLAGS) -c VideoServer.cpp
+#VideoServer.o: VideoServer.cpp Utility.h
+#	g++ -Wall -Wextra $(CFLAGS) -c VideoServer.cpp
 
 
 # Just a host for CIDs
@@ -33,4 +33,4 @@ Utility.o: Utility.h Utility.cpp
 
 
 clean:
-	rm *.o VideoServer CidDirectoryServer ContentServer
+	rm *.o CidDirectoryServer ContentServer

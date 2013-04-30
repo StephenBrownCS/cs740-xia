@@ -11,6 +11,8 @@
 #include "dagaddr.hpp"
 #include "XChunkSocketStream.h"
 #include "ChunkFetcher.h"
+#include "ClientConfig.h"
+#include "Utility.h"
 
 using namespace std;
 
@@ -32,6 +34,9 @@ XChunkSocketStream::XChunkSocketStream(int xSocket, VideoInformation & videoInfo
         cerr << "Could not create the chunk fetcher worker thread" << endl;
         exit(-1);
     }
+    
+    // Sleep at the beginning while the video gets going
+    thread_sleep(SECONDS_TO_WAIT_AT_INITIAL_LOADUP);
 }
 
 

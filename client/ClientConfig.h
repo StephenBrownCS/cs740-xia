@@ -21,4 +21,9 @@ extern const double NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING;
 // available, this is the time we tell them to wait for
 extern const double NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK;
 
+// Seconds for the player to wait, while the video loads up initially
+// Helps get the queue populated and ready to go
+extern const double SECONDS_TO_WAIT_AT_INITIAL_LOADUP;
+
 #endif
+
