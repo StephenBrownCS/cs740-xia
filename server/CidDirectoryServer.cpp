@@ -36,7 +36,9 @@ vector<string> videoList;
 
 // Hard-coded list of locations where to find Big Buck Bunny content
 const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000002 HID:0000000000000000000000000000000000000002";
-//const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000000 HID:0000000000000000000000000000000000000000";
+const string BIG_BUCK_BUNNY_CONTENT_SERVER_2 = "AD:1000000000000000000000000000000000000000 HID:0000000000000000000000000000000000000000";
+
+
 
 /*
 ** handle the request from the client and return the requested data
@@ -93,6 +95,7 @@ int main(int argc, char *argv[])
     videoList.push_back("BigBuckBunny");
 	ContentServerXidList["BigBuckBunny"] = new vector<string>();
 	ContentServerXidList["BigBuckBunny"]->push_back(BIG_BUCK_BUNNY_CONTENT_SERVER_1);
+	ContentServerXidList["BigBuckBunny"]->push_back(BIG_BUCK_BUNNY_CONTENT_SERVER_2);
 
     // Read in the CID lists for each video from disk
     readInCIDLists();
@@ -202,9 +205,8 @@ void *processRequest (void *socketid)
 				for(vector<string>::iterator it = ContentServerXidList[videoName]->begin();
 					it != ContentServerXidList["BigBuckBunny"]->end();
 					++it){
-						response += *it;
+						response += *it + " ";
 				}
-				response += " ";
 	
 		        // Send back the number of CIDs followed by list of AD-HIDs
 	            cout << "Sending back " << response << endl;

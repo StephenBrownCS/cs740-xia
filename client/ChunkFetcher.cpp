@@ -229,7 +229,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         } else if (status == WAITING_FOR_CHUNK) {
             // one or more chunks aren't ready.
             cout << "waiting... one or more chunks aren't ready yet" << endl;
-            printChunkStatuses(chunkStatuses, numChunks);
+            //printChunkStatuses(chunkStatuses, numChunks);
         }
         sleep(1);
     }

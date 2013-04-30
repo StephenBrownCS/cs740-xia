@@ -46,10 +46,6 @@ int main(int argc, char *argv[])
     if (uploadContent(VIDEO_NAME.c_str()) != 0){
         die(-1, "Unable to upload the video %s\n", VIDEO_NAME.c_str());
     }
-    
-    while(1){
-        ;
-    }
     return 0;
 }
 
