@@ -145,10 +145,12 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
     // Number of chunks in the CID List that we assemble
     int numChunks = 0;
 
+    videoInformation.printServerLocations();
+
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     char* next = NULL;
     while ((next = strchr(chunk_ptr, ' '))) {
-        *next = 0;
+        //*next = 0;
 
         // Create DAG for CID
         char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
@@ -171,7 +173,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         }
                
         strcpy(dag, g.dag_string().c_str());
-        cout << dag << endl;
+        //cout << dag << endl;
         
         chunkStatuses[numChunks].cidLen = g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
@@ -213,11 +215,11 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
             waitingForChunkCounter++;
             
             if (waitingForChunkCounter > NUM_WAITING_MESSAGES_THRESHOLD){
-                cout << "ROTATING DAG AROUND" << endl;
+                cout << "\n*****SWITCHING PRIMARY CID LOCATION*****\n" << endl;
                 videoInformation.rotateServerLocations();
                 
                 // this may lead to infinite recursion, if no server location works
-                readChunkData(listOfChunkCIDs);
+                return readChunkData(listOfChunkCIDs);
             }
             
         }

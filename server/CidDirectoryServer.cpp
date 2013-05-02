@@ -94,8 +94,8 @@ int main(int argc, char *argv[])
     // Initialize our list of videos
     videoList.push_back("BigBuckBunny");
 	ContentServerXidList["BigBuckBunny"] = new vector<string>();
-	ContentServerXidList["BigBuckBunny"]->push_back(BIG_BUCK_BUNNY_CONTENT_SERVER_1);
 	ContentServerXidList["BigBuckBunny"]->push_back(BIG_BUCK_BUNNY_CONTENT_SERVER_2);
+	ContentServerXidList["BigBuckBunny"]->push_back(BIG_BUCK_BUNNY_CONTENT_SERVER_1);
 
     // Read in the CID lists for each video from disk
     readInCIDLists();

@@ -16,6 +16,11 @@ all: ContentServer CidDirectoryServer
 # Just a host for CIDs
 ContentServer: ContentServer.o Utility.o
 	g++ -Wall -Wextra $(CFLAGS) -o $@ ContentServer.o Utility.o $(LDFLAGS)
+	cp ContentServer ContentServer1
+	cp ContentServer ContentServer2
+	cp ContentServer ContentServer3
+	cp ContentServer ContentServer4
+	rm ContentServer
 
 ContentServer.o: ContentServer.cpp Utility.h
 	g++ -Wall -Wextra $(CFLAGS) -c ContentServer.cpp

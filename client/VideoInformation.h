@@ -43,6 +43,8 @@ public:
     ServerLocation getServerLocation(int index);
     
     void rotateServerLocations();
+
+    void printServerLocations();
     
 private:
     // a list of AD-HIDs

@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "VideoInformation.h"
 #include "Utility.h"
 
@@ -26,8 +27,15 @@ int VideoInformation::getNumServerLocations(){
     return serverLocations.size();
 }
 
+void VideoInformation::printServerLocations(){
+    for(deque<ServerLocation>::iterator it = serverLocations.begin(); it != serverLocations.end(); ++it){
+        ServerLocation & location = *it;
+        cout << location.getAd() << " " << location.getHid() << endl;
+    }
+}
+
 void VideoInformation::rotateServerLocations(){
-    ServerLocation temp = serverLocations[index];
+    ServerLocation temp = serverLocations.front();
     serverLocations.pop_front();
     serverLocations.push_back(temp);
 }
