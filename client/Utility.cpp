@@ -30,14 +30,15 @@ void printHostInformation(){
 	XreadLocalHostAddr(sock, adBuff, MAX_SIZE_XID, hidBuff, MAX_SIZE_XID, fourIdBuff, MAX_SIZE_XID);
 	
 	string ad(adBuff);
+	string hid(hidBuff);
 	say("Host Information:");
-	say("\tAD: " + adBuff + "\n\tHID: " + hidBuff + "\n\t4ID: " + fourIdBuff);
+	say("\tAD: " + ad + "\n\tHID: " + hid + "\n\t4ID: " + fourIdBuff);
 	
 	Xclose(sock);
 }
 
 
-void say(string msg, int priorityLevel = LVL_INFO){
+void say(string msg, int priorityLevel){
     if(VERBOSE || priorityLevel == LVL_INFO){
         cout << msg << endl;
     }

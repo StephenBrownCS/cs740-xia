@@ -18,6 +18,7 @@ public:
     std::string getAd(){
         return ad;
     }
+
    
    
     /**
@@ -33,7 +34,14 @@ public:
 // Includes the number of chunks, as well as a list of content server XIDs
 class VideoInformation{
 public:    
-    VideoInformation(int numChunks_): numChunks(numChunks_) {}
+    VideoInformation(int numChunks_): numChunks(numChunks_) {}  
+    
+    /**
+     *
+     */
+    int getNumChunks(){
+        return numChunks;
+    }
     
     // Adds a server location to the list of locations
     void addServerLocation(ServerLocation serverLocation);

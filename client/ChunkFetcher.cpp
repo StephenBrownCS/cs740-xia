@@ -103,7 +103,7 @@ void ChunkFetcher::fetchChunkWindow(){
 
 
 char* ChunkFetcher::retrieveCIDs(){
-    if(videoInformation.numChunks <= nextChunkToRequest){
+    if(videoInformation.getNumChunks() <= nextChunkToRequest){
         reachedEndOfFile = true;
         return NULL;
     }
@@ -112,8 +112,8 @@ char* ChunkFetcher::retrieveCIDs(){
     // GET LIST OF CIDs FROM SERVER
     // Determine how many chunks to ask for
     int numToReceive = CHUNK_WINDOW_SIZE;
-    if (videoInformation.numChunks - nextChunkToRequest < numToReceive){
-        numToReceive = videoInformation.numChunks - nextChunkToRequest;
+    if (videoInformation.getNumChunks() - nextChunkToRequest < numToReceive){
+        numToReceive = videoInformation.getNumChunks() - nextChunkToRequest;
     }
 
     // tell the server we want a list of <numToReceive> cids starting at location <offset>

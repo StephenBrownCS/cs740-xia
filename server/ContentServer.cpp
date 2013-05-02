@@ -31,7 +31,7 @@ string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.o
 /*
 ** upload the video file as content chunks
 */
-int uploadContent(const char *fname, bool shouldTakeDownContent, int periodToSleep)
+int uploadContent(const char *fname, bool shouldTakeDownContent, int periodToSleep);
 
 
 //***************************************************************************
@@ -61,7 +61,7 @@ int uploadContent(const char *fname, bool shouldTakeDownContent, int periodToSle
 {
     int count;
 
-    say("loading video file: %s\n", fname);
+    say("Loading video file: fname");
     say("Allocating cache slice", LVL_DEBUG);
     ChunkContext *ctx = XallocCacheSlice(POLICY_DEFAULT, 0, 20000000);
     if (ctx == NULL)

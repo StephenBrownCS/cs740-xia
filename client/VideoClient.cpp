@@ -36,7 +36,7 @@ VideoInformation receiveVideoInformation(int sock);
 // ******                    MAIN METHOD                                 *****
 // ***************************************************************************
 
-int main(){
+int main(int argc, char** argv){
     printHostInformation();
     
     if(argc > 1){
@@ -72,7 +72,7 @@ int main(){
     
     // GET NUMBER OF CHUNKS
     VideoInformation videoInformation = receiveVideoInformation(sock);
-    cout << "Received number of chunks: " << videoInformation.numChunks << endl;
+    cout << "Received number of chunks: " << videoInformation.getNumChunks() << endl;
 
     // STREAM THE VIDEO
     XChunkSocketStream chunkSocketStream(sock, videoInformation);

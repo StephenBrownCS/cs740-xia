@@ -14,7 +14,7 @@ void printHostInformation();
 /*
 ** write the message to stdout unless in quiet mode
 */
-void say(std::string msg);
+void say(std::string msg, int priorityLevel = LVL_INFO);
 
 
 /*
