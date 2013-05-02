@@ -87,8 +87,15 @@ private:
 	*/
 	int readChunkData(char* listOfChunkCIDs);
 	
+	/**
+	 * Sends command string to the CID directory server that we are communicating
+	 * with.
+	*/
 	int sendCmd(const char *cmd);
 
+    /**
+     * Receives reply from the server, and places it in the reply buffer.
+    */
 	int receiveReply(char *reply, int size);
 	
 	// Returns the number of bytes ready in the queue + bytes remaining in 

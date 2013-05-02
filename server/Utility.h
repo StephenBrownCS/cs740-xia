@@ -4,15 +4,16 @@
 
 #include <iostream>
 
-
-extern int VERBOSE;
+extern const int LVL_INFO;
+extern const int LVL_DEBUG;
+extern bool VERBOSE;
 
 void printHostInformation();
 
 /*
 ** write the message to stdout unless in quiet mode
 */
-    void say(const char *fmt, ...);
+    void say(std::string msg);
 
 /*
 ** always write the message to stdout

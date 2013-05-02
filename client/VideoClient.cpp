@@ -3,7 +3,6 @@
 	Video Client
 	This Video Client will stream video from the video server
 
-
 	Authors: Ben Bramble, Stephen Brown, and Big Buck Bunny
 */
 
@@ -40,6 +39,11 @@ VideoInformation receiveVideoInformation(int sock);
 int main(){
     printHostInformation();
     
+    if(argc > 1){
+        if(strcmp(argv[1], "-v") == 0)
+            VERBOSE = true;
+    }
+    
     int sock;
 	string videoName = "BigBuckBunny"; //Hard-coded
 
@@ -60,11 +64,6 @@ int main(){
         Xclose(sock);
          die(-1, "Unable to bind to the dag: %s\n", server_dag);
     }
-
-    // No longer needed, as client no longer retrieves the actual content 
-	// from the same server as the CID lists
-    //string serverAd = extractDagAd(server_dag);
-    //string serverHid = extractDagHid(server_dag);
 
     // send the request for the number of chunks
     cout << "Sending request for number of chunks" << endl;
@@ -104,16 +103,16 @@ VideoInformation receiveVideoInformation(int sock)
 	stringstream ss(buffer_str);
 	string numChunks;
 	ss >> numChunks;
-	cout << "numChunks: " << numChunks << endl;
+	say("numChunks: " + numChunks);
 	
 	VideoInformation videoInformation(atoi(numChunks.c_str()));
 	
 	// There may be multiple ad-hid's listed (multiple locations for 
 	// content servers)
+	say("Content Server Locations:");
 	string ad, hid;
 	while (ss >> ad >> hid){
-		cout << "Ad: " << ad << endl;
-		cout << "Hid: " << hid << endl;
+		say("\tAD: " + ad + " " + "HID: " + hid);
 		ServerLocation location(ad + " " + hid);
 		videoInformation.addServerLocation(location);
 	} 

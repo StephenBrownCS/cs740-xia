@@ -28,12 +28,10 @@ using namespace std;
 string VIDEO_NAME = "../../xia-core/applications/demo/web_demo/resources/video.ogv";
 //string VIDEO_NAME = "../../small.ogv";
 
-const int PERIOD_TO_SLEEP = 40;
-
 /*
 ** upload the video file as content chunks
 */
-    int uploadContent(const char *fname);
+int uploadContent(const char *fname, bool shouldTakeDownContent, int periodToSleep)
 
 
 //***************************************************************************
@@ -44,32 +42,39 @@ int main(int argc, char *argv[])
 {
     printHostInformation();
     
+    int periodToSleep = 0;
+    bool shouldTakeDownContent = false;
+    if (argc > 1){
+        shouldTakeDownContent = true;
+        periodToSleep = atoi(argv[1]);
+    }
+    
     // put the video file into the content cache
-    if (uploadContent(VIDEO_NAME.c_str()) != 0){
+    if (uploadContent(VIDEO_NAME.c_str(), shouldTakeDownContent, periodToSleep) != 0){
         die(-1, "Unable to upload the video %s\n", VIDEO_NAME.c_str());
     }
     return 0;
 }
 
 
-int uploadContent(const char *fname)
+int uploadContent(const char *fname, bool shouldTakeDownContent, int periodToSleep)
 {
     int count;
 
     say("loading video file: %s\n", fname);
-    cout << "Allocating cache slice" << endl;
+    say("Allocating cache slice", LVL_DEBUG);
     ChunkContext *ctx = XallocCacheSlice(POLICY_DEFAULT, 0, 20000000);
     if (ctx == NULL)
         die(-2, "Unable to initilize the chunking system\n");
 
-    cout << "Putting the file..." << endl;
+    say("Putting the file...", LVL_DEBUG);
     ChunkInfo *info;
     if ((count = XputFile(ctx, fname, CHUNKSIZE, &info)) < 0)
         die(-3, "unable to process the video file\n");
 
-    say("put %d chunks\n", count);
+    say("Put count chunks\n");
 
-	//TODO: Remove
+	//Print out the CIDs for the CidDirectoryServer to read and send out
 	ofstream outfile("CIDs_BigBuckBunny.txt");
    	for (int i = 0; i < count; i++) {
         string CID = "CID:";
@@ -78,12 +83,14 @@ int uploadContent(const char *fname)
     }
 	outfile.close();
 
-    // Sleep for some period of time, then clear the content cache
-    sleep(PERIOD_TO_SLEEP);
+    if(shouldTakeDownContent){
+        // Sleep for some period of time, then clear the content cache
+        sleep(periodToSleep);
     
-    cout << "Removing all CIDs" << endl;
-    for (int i = 0; i < count; i++) {
-        XremoveChunk(ctx, info[i].cid);
+        say("Removing CIDs from Cache", LVL_INFO);
+        for (int i = 0; i < count; i++) {
+            XremoveChunk(ctx, info[i].cid);
+        }
     }
 
     XfreeChunkInfo(info);

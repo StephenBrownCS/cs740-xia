@@ -10,7 +10,12 @@
 
 using namespace std;
 
-bool VERBOSE = true;
+const int LVL_INFO = 1;
+const int LVL_DEBUG = 0;
+
+const int MAX_SIZE_XID = 64;
+
+bool VERBOSE = false;
 
 
 void printHostInformation(){
@@ -19,28 +24,22 @@ void printHostInformation(){
         die(-1, "Unable to create the listening socket\n");
     }
     
-    char adBuff[1024];
-    char hidBuff[1024];
-    char fourIdBuff[1024];
-	XreadLocalHostAddr(sock, adBuff, 1024, hidBuff, 1024, fourIdBuff, 1024);
+    char adBuff[MAX_SIZE_XID];
+    char hidBuff[MAX_SIZE_XID];
+    char fourIdBuff[MAX_SIZE_XID];
+	XreadLocalHostAddr(sock, adBuff, MAX_SIZE_XID, hidBuff, MAX_SIZE_XID, fourIdBuff, MAX_SIZE_XID);
 	
 	string ad(adBuff);
-	cout << "AD: " << adBuff << endl;
-	cout << "HID: " << hidBuff << endl;
-	cout << "4ID: " << fourIdBuff << endl;
+	say("Host Information:");
+	say("\tAD: " + adBuff + "\n\tHID: " + hidBuff + "\n\t4ID: " + fourIdBuff);
 	
 	Xclose(sock);
 }
 
 
-void say(const char *fmt, ...)
-{
-    if (VERBOSE) {
-        va_list args;
-
-        va_start(args, fmt);
-        vprintf(fmt, args);
-        va_end(args);
+void say(string msg, int priorityLevel = LVL_INFO){
+    if(VERBOSE || priorityLevel == LVL_INFO){
+        cout << msg << endl;
     }
 }
 

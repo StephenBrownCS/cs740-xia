@@ -57,7 +57,7 @@ Chunk* ChunkFetcher::getNextChunkFromQueue(){
         
     // Otherwise, idle around and wait for chunks to get fetched
     while(chunkQueue->size() == 0 && !reachedEndOfFile){
-        cout << "Waiting for Queue to get refilled" << endl;
+        say("Waiting for Queue to get refilled", LVL_DEBUG);
         thread_sleep(NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK);
     }
     
@@ -76,25 +76,25 @@ void* ChunkFetcher::fetchChunks(void* chunkFetcher_){
     while( !chunkFetcher->reachedEndOfFile ){
         while(chunkFetcher->chunkQueue->size() < CHUNK_QUEUE_THRESHOLD_SIZE && 
               !chunkFetcher->reachedEndOfFile){
-            cout << "Fetching Chunk Window" << endl;
+            say("Fetching Chunk Window", LVL_DEBUG);
             chunkFetcher->fetchChunkWindow();
         }
         
-        cout << "Sleeping before we check queue size again" << endl;
+        say("Sleeping before we check queue size again", LVL_DEBUG);
         thread_sleep(  NUM_SECONDS_TO_WAIT_BETWEEN_QUEUE_THRESHOLD_CHECKING);
     }
 
-    cout << "All chunks fetched" << endl;
-    cout << "Terminating Chunk Fetcher Thread" << endl;
+    say("All chunks fetched", LVL_INFO);
+    say("Terminating Chunk Fetcher Thread", LVL_INFO);
 
     return NULL;
 }
 
 
 void ChunkFetcher::fetchChunkWindow(){
-    cout << "Retrieving CIDs...";
+    say("Retrieving CIDs...", LVL_DEBUG);
     char* listOfChunkCIDs = retrieveCIDs();
-    cout << "done!" << endl;
+    say("done!", LVL_DEBUG);
     if(listOfChunkCIDs){
         readChunkData(listOfChunkCIDs);
         delete listOfChunkCIDs;
@@ -126,7 +126,6 @@ char* ChunkFetcher::retrieveCIDs(){
     // Server replies with "CID:" followed by a list of CIDs
     char reply[REPLY_MAX_SIZE];
     receiveReply(reply, REPLY_MAX_SIZE);
-    //cout << "Received Reply: " << reply << endl;
 
     nextChunkToRequest += CHUNK_WINDOW_SIZE;
 
@@ -150,14 +149,11 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     char* next = NULL;
     while ((next = strchr(chunk_ptr, ' '))) {
-        //*next = 0;
-
         // Create DAG for CID
         char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
         
-        
-        // New Way using DAGs
-        // Add primary path
+        // Create a DAG consisting of all known routes to the CID
+        // Start with the primary route
         Node n_src;
         Node n_ad(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
         Node n_hid(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
@@ -173,30 +169,25 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         }
                
         strcpy(dag, g.dag_string().c_str());
-        //cout << dag << endl;
         
         chunkStatuses[numChunks].cidLen = g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
-        
-        //say("getting %s\n", chunk_ptr);
         numChunks++;
 
         // Set chunk_ptr to point to the next position (following the space)
         chunk_ptr = next + 1;
     }
 
-    cout << "REQUEST CHUNKS" << endl;
+    say("REQUEST CHUNKS", LVL_DEBUG);
     // BRING LIST OF CHUNKS LOCAL
     if (XrequestChunks(chunkSock, chunkStatuses, numChunks) < 0) {
         cerr << "unable to request chunks" << endl;
         return -1;
     }
 
-    cout << "LOAD CHUNKS IN" << endl;
+    say("LOAD CHUNKS IN", LVL_DEBUG);
     // IDLE AROUND UNTIL ALL CHUNKS ARE READY
-    
     int waitingForChunkCounter = 0;
-    
     while (1) {
         int status = XgetChunkStatuses(chunkSock, chunkStatuses, numChunks);
         //printChunkStatuses(chunkStatuses, numChunks);
@@ -205,17 +196,17 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
             break;
         }
         else if (status < 0) { // REQUEST_FAILED Or INVALID_HASH
-            cout << "error getting chunk status" << endl;
+            say("error getting chunk status");
             return -1;
 
         } else if (status == WAITING_FOR_CHUNK) {
             // one or more chunks aren't ready.
-            cout << "waiting... one or more chunks aren't ready yet" << endl;
+            say("waiting... one or more chunks aren't ready yet");
             //printChunkStatuses(chunkStatuses, numChunks);
             waitingForChunkCounter++;
             
             if (waitingForChunkCounter > NUM_WAITING_MESSAGES_THRESHOLD){
-                cout << "\n*****SWITCHING PRIMARY CID LOCATION*****\n" << endl;
+                say("\n*****SWITCHING PRIMARY CID LOCATION*****\n");
                 videoInformation.rotateServerLocations();
                 
                 // this may lead to infinite recursion, if no server location works
@@ -225,7 +216,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         }
         sleep(1);
     }
-    cout << "READ CHUNKS" << endl;
+    say("READ CHUNKS", LVL_DEBUG);
 
     // READ EACH CHUNK
     for (int i = 0; i < numChunks; i++) {
@@ -238,7 +229,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         // Receive the chunk, and write into data buffer
         int len = 0;
         if ((len = XreadChunk(chunkSock, chunkData, XIA_MAXCHUNK, 0, chunkStatuses[i].cid, chunkStatuses[i].cidLen)) < 0) {
-            cout << "error getting chunk\n";
+            cerr << "error getting chunk\n";
             return -1;
         }
 
@@ -249,7 +240,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         chunkStatuses[i].cidLen = 0;
     }
     
-    cout << "DONE READING" << endl;
+    say("DONE READING", LVL_DEBUG);
 
     return numChunks;
 }
@@ -288,6 +279,7 @@ int ChunkFetcher::receiveReply(char *reply, int size)
 }
 
 
+/*
 // Byte Counter Function Object
 // Used as a helper for numBytesReady() to count the bytes
 // present in the queue
@@ -299,7 +291,6 @@ struct ByteCounterFO{
     }
 };
 
-/*
 int ChunkFetcher::numBytesReady(){
     // num bytes ready is bytes remaining from current chunk + 
     // num bytes in the chunk queue

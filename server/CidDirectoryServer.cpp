@@ -35,9 +35,12 @@ map<string, vector<string>* > ContentServerXidList;
 vector<string> videoList;
 
 // Hard-coded list of locations where to find Big Buck Bunny content
-const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = "AD:1000000000000000000000000000000000000001 HID:0000000000000000000000000000000000000005";
-const string BIG_BUCK_BUNNY_CONTENT_SERVER_2 = "AD:1000000000000000000000000000000000000002 HID:0000000000000000000000000000000000000002";
-
+const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = 
+    "AD:1000000000000000000000000000000000000001 " + 
+    "HID:0000000000000000000000000000000000000005";
+const string BIG_BUCK_BUNNY_CONTENT_SERVER_2 = 
+    "AD:1000000000000000000000000000000000000002 " + 
+    "HID:0000000000000000000000000000000000000002";
 
 
 /*
@@ -120,16 +123,6 @@ int main(int argc, char *argv[])
         die(-1, "Unable to bind to the dag: %s\n", dag);
     }
 
-        char adBuff[1024];
-    char hidBuff[1024];
-    char fourIdBuff[1024];
-	XreadLocalHostAddr(sock, adBuff, 1024, hidBuff, 1024, fourIdBuff, 1024);
-	
-
-	cout << "AD: " << adBuff << endl;
-	cout << "HID: " << hidBuff << endl;
-	cout << "4ID: " << fourIdBuff << endl;
-
     // we're done with this
     Xfreeaddrinfo(addrInfo);
     dag = NULL;
@@ -177,7 +170,7 @@ void *processRequest (void *socketid)
         }
 
         string SIDReqStr(SIDReq);
-        cout << "Got request: " << SIDReqStr << endl;
+        say("Got request: " + SIDReqStr);
         // if the request is about number of chunks return number of chunks
         // since this is first time, you would return along with header
 
@@ -187,7 +180,7 @@ void *processRequest (void *socketid)
 			string prefix = "get numchunks ";
 			videoName = SIDReqStr.substr(prefix.length());
 			
-			cout << " Request asks for number of chunks: " << videoName << endl;
+			say("Request asks for number of chunks: " + videoName);
 
 			//Figure out what video they would like
             			
@@ -209,8 +202,7 @@ void *processRequest (void *socketid)
 				}
 	
 		        // Send back the number of CIDs followed by list of AD-HIDs
-	            cout << "Sending back " << response << endl;
-	            cout << "Response Length: " << response.length() << endl;
+	            say("Sending back " + response, LVL_DEBUG);
 	            Xsend(acceptSock,(void *) response.c_str(), response.length(), 0);
 			}
 			else{
@@ -226,7 +218,6 @@ void *processRequest (void *socketid)
 		else if(isVideoSelectionRequest(SIDReqStr)){
 			ostringstream oss;
 			for(vector<string>::iterator it = videoList.begin(); it != videoList.end(); ++it){
-
 				oss << *it << " ";
 			}
 			Xsend(acceptSock,(void *) oss.str().c_str(), oss.str().length(), 0);
@@ -237,8 +228,7 @@ void *processRequest (void *socketid)
 
             // Format of the request:   start-offset:end-offset
             // Each offset position corresponds to a CID (chunk)
-
-            cout << "Request is for a certain chunk span" << endl;
+            say("Request is for a certain chunk span");
 
             // Parse the Request, extract start and end offsets
 
@@ -250,9 +240,6 @@ void *processRequest (void *socketid)
             str = SIDReqStr.substr(findpos + 1);
             int end_offset = atoi(str.c_str());
 
-            cout << "Start: " << start_offset << endl;
-            cout << "End: " << end_offset << endl;
-
             // construct the string from CIDlist
             // return the list of CIDs, NOT including end_offset
             string requestedCIDlist = "";
@@ -260,7 +247,7 @@ void *processRequest (void *socketid)
                 requestedCIDlist += CIDlist[videoName]->at(i) + " ";
             }       
             Xsend(acceptSock, (void *)requestedCIDlist.c_str(), requestedCIDlist.length(), 0);
-            cout << "sending requested CID list: " << requestedCIDlist << endl;
+            say("sending requested CID list: ", LVL_DEBUG);
         }
     }
 
@@ -291,12 +278,9 @@ bool isVideoSelectionRequest(string requestStr){
 
 void help(const char *name)
 {
-    printf("\n%s (%s)\n", TITLE, VERSION);
-    printf("usage: %s [-q] file\n", name);
+    printf("usage: name [-v]");
     printf("where:\n");
-    printf(" -q : quiet mode\n");
-    printf(" file is the video file to serve up\n");
-    printf("\n");
+    printf(" -v : verbose mode\n");
     exit(0);
 }
 
@@ -308,15 +292,13 @@ void getConfig(int argc, char** argv)
 
     while ((c = getopt(argc, argv, "q")) != -1) {
         switch (c) {
-            case 'q':
-                // turn off info messages
-            VERBOSE = 0;
-            break;
+            case 'v':
+                VERBOSE = true;
+                break;
             case '?':
             case 'h':
             default:
-                // Help Me!
-            help(basename(argv[0]));
+                help(basename(argv[0]));
         }
     }
 
@@ -324,7 +306,7 @@ void getConfig(int argc, char** argv)
     //    help(basename(argv[0]));
 
     //VIDEO_NAME = argv[optind];
-    //HARD-CODED SO NO LONGER USED *****
+    //Video Name is is hard-coded, so this is no longer used*****
 }
 
 

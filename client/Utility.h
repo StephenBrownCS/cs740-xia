@@ -1,8 +1,11 @@
 #ifndef __UTILITY_H__
 #define __UTILITY_H__
 
+#include <iostream>
 #include "Xsocket.h"
 
+extern const int LVL_INFO;
+extern const int LVL_DEBUG;
 extern bool VERBOSE;
 
 
@@ -11,7 +14,8 @@ void printHostInformation();
 /*
 ** write the message to stdout unless in quiet mode
 */
-void say(const char *fmt, ...);
+void say(std::string msg);
+
 
 /*
 ** write the message to stdout, and exit the app

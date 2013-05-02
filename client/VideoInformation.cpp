@@ -30,7 +30,7 @@ int VideoInformation::getNumServerLocations(){
 void VideoInformation::printServerLocations(){
     for(deque<ServerLocation>::iterator it = serverLocations.begin(); it != serverLocations.end(); ++it){
         ServerLocation & location = *it;
-        cout << location.getAd() << " " << location.getHid() << endl;
+        say("AD:" + location.getAd() + " HID:" + location.getHid());
     }
 }
 
