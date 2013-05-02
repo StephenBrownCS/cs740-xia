@@ -11,6 +11,7 @@ topology.o:
 
 bin.o:
 	cp bin_xsockconf.ini ../../xia-core/bin/xsockconf.ini
+	cp bin_xsockconf.ini ../../xia-core/xsockconf.ini
 	cp bin_xsockconf.ini ./xsockconf.ini
 	cp app_xsockconf.ini ../server/xsockconf.ini
 	cp app_xsockconf.ini ../client/xsockconf.ini
@@ -34,6 +35,8 @@ initiate.o:
 	$(XIA-CORE)/xhcp_clientd www_h.host3.com.xia host3 host3 &
 	$(XIA-CORE)/xhcp_clientd www_h.host4.com.xia host4 host4 &
 	$(XIA-CORE)/xhcp_clientd www_h.host5.com.xia host5 host5 &
+	$(XIA-CORE)/xhcp_clientd www_h.host6.com.xia host6 host6 &
+	$(XIA-CORE)/xhcp_clientd www_h.host7.com.xia host7 host7 &
 	sleep 2
 	$(XIA-CORE)/xnameservice &
 	sleep 2
