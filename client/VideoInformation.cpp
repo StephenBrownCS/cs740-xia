@@ -26,7 +26,12 @@ int VideoInformation::getNumServerLocations(){
     return serverLocations.size();
 }
 
+void VideoInformation::rotateServerLocations(){
+    ServerLocation temp = serverLocations[index];
+    serverLocations.pop_front();
+    serverLocations.push_back(temp);
+}
+
 ServerLocation VideoInformation::getServerLocation(int index){
     return serverLocations[index];
 }
-

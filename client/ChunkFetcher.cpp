@@ -15,7 +15,7 @@
 #include "ClientConfig.h"
 #include "VideoInformation.h"
 
-// Maximum length that hte CID DAG may be for any given chunk
+// Maximum length that the CID DAG may be for any given chunk
 // May need to be lengthened with increasingly complex 
 // fallback routes
 const int MAX_LENGTH_OF_CID_DAG = 512;
@@ -121,20 +121,6 @@ char* ChunkFetcher::retrieveCIDs(){
     char cmd[512];
     sprintf(cmd, "block %d:%d", nextChunkToRequest, nextChunkToRequest + numToReceive);
     
-    // Simulate Failover
-    /*
-    if(nextChunkToRequest < 205 && nextChunkToRequest > 195){
-        cout << "************* MOVING TO NEW AD ************" << endl;
-        int ret = XupdateAD(xSocket, "AD:1000000000000000000000000000000000000001", "IP:4500000000010000fafa0000000000000000000");
-        if (ret < 0){
-            cout << "AD migration failed" << endl;
-            exit(-1);
-        }
-        printHostInformation();
-        
-        
-    }
-    */
     sendCmd(cmd);
 
     // Server replies with "CID:" followed by a list of CIDs
@@ -190,34 +176,12 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         chunkStatuses[numChunks].cidLen = g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
         
-        
-        /*
-        // Old Way using RE
-        ServerLocation serverLocation = videoInformation.getServerLocation(0);
-        sprintf(dag, "RE ( AD:%s HID:%s ) %s", serverLocation.getAd().c_str(), serverLocation.getHid().c_str(), chunk_ptr);
-
-        chunkStatuses[numChunks].cidLen = strlen(dag);
-        chunkStatuses[numChunks].cid = dag;
-        cout << dag << endl;
-        */
         //say("getting %s\n", chunk_ptr);
         numChunks++;
 
         // Set chunk_ptr to point to the next position (following the space)
         chunk_ptr = next + 1;
     }
-
-    // Add the last chunk CID onto the end of the CID chunkStatus list
-    // Commented this out since it was causing 11 things to get requested when should be 10
-    // {
-    //     char* dag = (char *) malloc(512);
-    //     sprintf(dag, "RE ( %s %s ) CID:%s", SERVER_AD, SERVER_HID, chunk_ptr);
-    //     //printf("getting %s\n", chunk_ptr);
-    //     chunkStatuses[numChunks].cidLen = strlen(dag);
-    //     chunkStatuses[numChunks].cid = dag;
-    //     numChunks++;
-    // }
-
 
     cout << "REQUEST CHUNKS" << endl;
     // BRING LIST OF CHUNKS LOCAL
@@ -228,6 +192,9 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
 
     cout << "LOAD CHUNKS IN" << endl;
     // IDLE AROUND UNTIL ALL CHUNKS ARE READY
+    
+    int waitingForChunkCounter = 0;
+    
     while (1) {
         int status = XgetChunkStatuses(chunkSock, chunkStatuses, numChunks);
         //printChunkStatuses(chunkStatuses, numChunks);
@@ -243,6 +210,16 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
             // one or more chunks aren't ready.
             cout << "waiting... one or more chunks aren't ready yet" << endl;
             //printChunkStatuses(chunkStatuses, numChunks);
+            waitingForChunkCounter++;
+            
+            if (waitingForChunkCounter > NUM_WAITING_MESSAGES_THRESHOLD){
+                cout << "ROTATING DAG AROUND" << endl;
+                videoInformation.rotateServerLocations();
+                
+                // this may lead to infinite recursion, if no server location works
+                readChunkData(listOfChunkCIDs);
+            }
+            
         }
         sleep(1);
     }
@@ -300,11 +277,6 @@ int ChunkFetcher::receiveReply(char *reply, int size)
         cerr << "Unable to communicate with the server" << endl;
         exit(-1);
     }
-
-    // If the first 3 characters were not "OK:", die
-    // if (strncmp(reply, "OK:", 3) != 0) {
-    //     die(-1, "%s\n", reply);
-    // }
 
     //Append null character
     reply[n] = 0;
