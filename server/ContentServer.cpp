@@ -79,13 +79,12 @@ int uploadContent(const char *fname)
 	outfile.close();
 
     // Sleep for some period of time, then clear the content cache
-    //sleep(PERIOD_TO_SLEEP);
-    /*
+    sleep(PERIOD_TO_SLEEP);
+    
     cout << "Removing all CIDs" << endl;
     for (int i = 0; i < count; i++) {
         XremoveChunk(ctx, info[i].cid);
     }
-*/
 
     XfreeChunkInfo(info);
 
