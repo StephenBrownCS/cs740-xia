@@ -3,7 +3,7 @@
 #define VIDEO_INFORMATION_H_
 
 #include <string>
-#include <vector>
+#include <deque>
 
 class ServerLocation{
     std::string ad;
@@ -42,9 +42,13 @@ public:
     
     ServerLocation getServerLocation(int index);
     
+    void rotateServerLocations();
+
+    void printServerLocations();
+    
 private:
     // a list of AD-HIDs
-    std::vector<ServerLocation> serverLocations;
+    std::deque<ServerLocation> serverLocations;
 };
 
 #endif

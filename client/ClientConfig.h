@@ -25,5 +25,9 @@ extern const double NUM_SECONDS_TO_WAIT_FOR_NEXT_CHUNK;
 // Helps get the queue populated and ready to go
 extern const double SECONDS_TO_WAIT_AT_INITIAL_LOADUP;
 
+// Number of CHUNK_WAITING messages the chunk fetcher receives, before it 
+// decides that the original CID Dag request failed for a window of CIDs
+extern const int NUM_WAITING_MESSAGES_THRESHOLD;
+
 #endif
 
