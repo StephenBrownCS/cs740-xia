@@ -147,6 +147,8 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     char* next = NULL;
     while ((next = strchr(chunk_ptr, ' '))) {
+        *next = 0;
+        
         // Create DAG for CID
         char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
         
@@ -156,19 +158,37 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         Node n_ad(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
         Node n_hid(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
         Node n_cid(Node::XID_TYPE_CID, chunk_ptr + 4); // +4 since we don't want CID:
-        Graph g = n_src * n_ad * n_hid * n_cid;
+        Graph g = n_cid;
+        Graph g2 = n_hid * n_cid;
+        Graph g3 = n_src * n_ad * n_hid * n_cid;
+        g = g + g2;
+        g = g + g3;
         
         // Add fall back paths
         for(int i = 1; i < videoInformation.getNumServerLocations(); i++){
             Node n_ad_backup(Node::XID_TYPE_AD, videoInformation.getServerLocation(i).getAd().c_str());
             Node n_hid_backup(Node::XID_TYPE_HID, videoInformation.getServerLocation(i).getHid().c_str());
+            Graph fallbackSubGraph = n_hid_backup * n_cid;
+            g = g + fallbackSubGraph;
             Graph fallbackGraph = n_src * n_ad_backup * n_hid_backup * n_cid;
             g = g + fallbackGraph;
         }
                
-        strcpy(dag, g.dag_string().c_str());
+        //strcpy(dag, g.dag_string().c_str());
+        string dag2 = "DAG 0 2 -\n"
+                     "AD:1000000000000000000000000000000000000001 1 2 -\n"
+                     "HID:0000000000000000000000000000000000000009 4-\n" 
+                     "AD:1000000000000000000000000000000000000002 3 -\n" 
+                     "HID:0000000000000000000000000000000000000002 4 -\n" ;
+        string cidPrefix("CID:");
+        string cidThing(chunk_ptr + 4);         
+        dag2 = dag2 + cidPrefix + cidThing;
         
-        chunkStatuses[numChunks].cidLen = g.dag_string().length();
+        cout << dag2.length() << endl;
+        strcpy(dag, dag2.c_str());  
+        cout << dag << endl;
+        
+        chunkStatuses[numChunks].cidLen = dag2.length();//g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
         numChunks++;
 
