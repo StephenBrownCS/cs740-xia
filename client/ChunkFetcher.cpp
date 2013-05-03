@@ -144,8 +144,6 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
     // Number of chunks in the CID List that we assemble
     int numChunks = 0;
 
-    videoInformation.printServerLocations();
-
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     char* next = NULL;
     while ((next = strchr(chunk_ptr, ' '))) {
@@ -201,7 +199,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
 
         } else if (status == WAITING_FOR_CHUNK) {
             // one or more chunks aren't ready.
-            say("waiting... one or more chunks aren't ready yet");
+            say("waiting... one or more chunks aren't ready yet", LVL_DEBUG);
             //printChunkStatuses(chunkStatuses, numChunks);
             waitingForChunkCounter++;
             

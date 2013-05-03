@@ -61,7 +61,8 @@ int uploadContent(const char *fname, bool shouldTakeDownContent, int periodToSle
 {
     int count;
 
-    say("Loading video file: fname");
+    string fileName(fname);
+    say("Loading video file: " + fileName);
     say("Allocating cache slice", LVL_DEBUG);
     ChunkContext *ctx = XallocCacheSlice(POLICY_DEFAULT, 0, 20000000);
     if (ctx == NULL)
@@ -72,7 +73,9 @@ int uploadContent(const char *fname, bool shouldTakeDownContent, int periodToSle
     if ((count = XputFile(ctx, fname, CHUNKSIZE, &info)) < 0)
         die(-3, "unable to process the video file\n");
 
-    say("Put count chunks\n");
+    ostringstream ss;
+    ss << count;
+    say("Put " + ss.str() + " chunks\n");
 
 	//Print out the CIDs for the CidDirectoryServer to read and send out
 	ofstream outfile("CIDs_BigBuckBunny.txt");
