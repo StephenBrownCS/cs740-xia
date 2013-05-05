@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <cassert>
 
@@ -93,19 +94,19 @@ void* ChunkFetcher::fetchChunks(void* chunkFetcher_){
 
 void ChunkFetcher::fetchChunkWindow(){
     say("Retrieving CIDs...", LVL_DEBUG);
-    char* listOfChunkCIDs = retrieveCIDs();
+    vector<string> listOfChunkCIDs = retrieveCIDs();
     say("done!", LVL_DEBUG);
-    if(listOfChunkCIDs){
+    if(!listOfChunkCIDs.empty()){
         readChunkData(listOfChunkCIDs);
-        delete listOfChunkCIDs;
     }
 }
 
 
-char* ChunkFetcher::retrieveCIDs(){
+vector<string> ChunkFetcher::retrieveCIDs(){
+    vector<string> cidList;
     if(videoInformation.getNumChunks() <= nextChunkToRequest){
         reachedEndOfFile = true;
-        return NULL;
+        return cidList;
     }
 
 
@@ -126,28 +127,34 @@ char* ChunkFetcher::retrieveCIDs(){
     // Server replies with "CID:" followed by a list of CIDs
     char reply[REPLY_MAX_SIZE];
     receiveReply(reply, REPLY_MAX_SIZE);
-
+    
     nextChunkToRequest += CHUNK_WINDOW_SIZE;
-
+    
     char* cid_list = new char[REPLY_MAX_SIZE];
     strncpy(cid_list, reply, REPLY_MAX_SIZE);
+    
+    string entireReply(reply);
+    stringstream ss(entireReply);
+    string cid;
+    cout << "HERE WE GO" << endl;
+    while(ss >> cid){
+        cout << "Pushing back " << cid.substr(4) << endl;
+        cidList.push_back(cid.substr(4));
+    }
 
-    return cid_list;
+    return cidList;
 }
 
 
 
-int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
+int ChunkFetcher::readChunkData(vector<string> listOfChunkCIDs){
     ChunkStatus chunkStatuses[CHUNK_WINDOW_SIZE];
-    char *chunk_ptr = listOfChunkCIDs;
 
     // Number of chunks in the CID List that we assemble
     int numChunks = 0;
 
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
-    char* next = NULL;
-    while ((next = strchr(chunk_ptr, ' '))) {
-        *next = 0;
+    for(vector<string>::iterator it = listOfChunkCIDs.begin(); it != listOfChunkCIDs.end(); ++it) {
         
         // Create DAG for CID
         char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
@@ -157,7 +164,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         Node n_src;
         Node n_ad(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
         Node n_hid(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
-        Node n_cid(Node::XID_TYPE_CID, chunk_ptr + 4); // +4 since we don't want CID:
+        Node n_cid(Node::XID_TYPE_CID, *it);
         Graph g = n_cid;
         Graph g2 = n_hid * n_cid;
         Graph g3 = n_src * n_ad * n_hid * n_cid;
@@ -174,26 +181,23 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
             g = g + fallbackGraph;
         }
                
-        //strcpy(dag, g.dag_string().c_str());
-        string dag2 = "DAG 0 2 -\n"
-                     "AD:1000000000000000000000000000000000000001 1 2 -\n"
-                     "HID:0000000000000000000000000000000000000009 4-\n" 
-                     "AD:1000000000000000000000000000000000000002 3 -\n" 
-                     "HID:0000000000000000000000000000000000000002 4 -\n" ;
+        strcpy(dag, g.dag_string().c_str());
+        //string dag2 = "DAG 0 2 -\n"
+        //             "AD:1000000000000000000000000000000000000001 1 2 -\n"
+        //             "HID:0000000000000000000000000000000000000009 4-\n" 
+        //             "AD:1000000000000000000000000000000000000002 3 -\n" 
+        //             "HID:0000000000000000000000000000000000000002 4 -\n" ;
         string cidPrefix("CID:");
-        string cidThing(chunk_ptr + 4);         
-        dag2 = dag2 + cidPrefix + cidThing;
+        string cidThing(*it);         
+        //dag2 = dag2 + cidPrefix + cidThing;
         
-        cout << dag2.length() << endl;
-        strcpy(dag, dag2.c_str());  
+        //cout << dag2.length() << endl;
+        //strcpy(dag, dag2.c_str());  
         cout << dag << endl;
         
-        chunkStatuses[numChunks].cidLen = dag2.length();//g.dag_string().length();
+        chunkStatuses[numChunks].cidLen = g.dag_string().length();//g.dag_string().length();
         chunkStatuses[numChunks].cid = dag;
         numChunks++;
-
-        // Set chunk_ptr to point to the next position (following the space)
-        chunk_ptr = next + 1;
     }
 
     say("REQUEST CHUNKS", LVL_DEBUG);
@@ -234,6 +238,7 @@ int ChunkFetcher::readChunkData(char* listOfChunkCIDs){
         }
         sleep(1);
     }
+    
     say("READ CHUNKS", LVL_DEBUG);
 
     // READ EACH CHUNK

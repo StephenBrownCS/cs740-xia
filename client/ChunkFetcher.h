@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <utility>
+#include <vector>
 #include "VideoInformation.h"
 
 class Chunk;
@@ -78,14 +79,14 @@ private:
 	 * represents the list of CIDs
          * Returns NULL if we have already reached the end of the file
 	*/
-	char* retrieveCIDs();
+	std::vector<std::string> retrieveCIDs();
 	
 	/**
 	 * Fetches the chunk data referred to by the list of CIDs
 	 * and places the chunks in the chunkQueue
 	 * Returns the number of chunks read in
 	*/
-	int readChunkData(char* listOfChunkCIDs);
+	int readChunkData(std::vector<std::string> listOfChunkCIDs);
 	
 	/**
 	 * Sends command string to the CID directory server that we are communicating
