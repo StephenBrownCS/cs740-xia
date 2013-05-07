@@ -93,9 +93,14 @@ void* ChunkFetcher::fetchChunks(void* chunkFetcher_){
 
 
 void ChunkFetcher::fetchChunkWindow(){
+    // Get the CIDs
     say("Retrieving CIDs...", LVL_DEBUG);
     vector<string> listOfChunkCIDs = retrieveCIDs();
     say("done!", LVL_DEBUG);
+    
+    // If we got some CIDs, construct a protoDag and go fetch them
+    Graph protoDag = createProtoDag();
+    
     if(!listOfChunkCIDs.empty()){
         readChunkData(listOfChunkCIDs);
     }
@@ -156,49 +161,16 @@ int ChunkFetcher::readChunkData(vector<string> listOfChunkCIDs){
     // build the list of chunk CID chunkStatuses (including Dags) to retrieve
     for(vector<string>::iterator it = listOfChunkCIDs.begin(); it != listOfChunkCIDs.end(); ++it) {
         
-        // Create DAG for CID
-        char* dag = (char *)malloc(MAX_LENGTH_OF_CID_DAG);
-        
-        // Create a DAG consisting of all known routes to the CID
-        // Start with the primary route
-        Node n_src;
-        Node n_ad(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
-        Node n_hid(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
-        Node n_cid(Node::XID_TYPE_CID, *it);
-        Graph g = n_cid;
-        Graph g2 = n_hid * n_cid;
-        Graph g3 = n_src * n_ad * n_hid * n_cid;
-        g = g + g2;
-        g = g + g3;
-        
-        list<Node> listOfAds;
-        listOfAds.push_back(n_ad);
-        
-        // Add fall back paths
-        for(int i = 1; i < videoInformation.getNumServerLocations(); i++){
-            Node n_ad_backup(Node::XID_TYPE_AD, videoInformation.getServerLocation(i).getAd().c_str());
-            Node n_hid_backup(Node::XID_TYPE_HID, videoInformation.getServerLocation(i).getHid().c_str());
-            Graph fallbackGraph = n_src * n_ad_backup * n_hid_backup * n_cid;
-            g = g + fallbackGraph;
-            
-            Graph circuitousFallbackGraph = n_src;
-            for(list<Node>::const_iterator jt = listOfAds.begin(); jt != listOfAds.end(); ++jt){
-                circuitousFallbackGraph = circuitousFallbackGraph * *jt;
-            }
-            circuitousFallbackGraph = circuitousFallbackGraph * n_ad * n_ad_backup * n_hid_backup * n_cid;
-            g = g + circuitousFallbackGraph;
-            
-            listOfAds.push_back(n_ad_backup);
-        }
+        // Create DAG for CID using the videoInformation AD and HIDs, including 
+        // fallback paths
+        string dagStr = createDag(*it)
+        char* dag = (char *) malloc(dagStr.length() + 1);
                
-        strcpy(dag, g.dag_string().c_str());
+        strcpy(dag, g.dag_string().c_str()); 
 
-        string cidPrefix("CID:");
-        string cidThing(*it);         
-
-        cout << dag << endl;
+        //cout << dag << endl;
         
-        chunkStatuses[numChunks].cidLen = g.dag_string().length();//g.dag_string().length();
+        chunkStatuses[numChunks].cidLen = dagStr.length();
         chunkStatuses[numChunks].cid = dag;
         numChunks++;
     }
@@ -270,6 +242,61 @@ int ChunkFetcher::readChunkData(vector<string> listOfChunkCIDs){
 
     return numChunks;
 }
+
+
+string ChunkFetcher::createDag(const string & cid){
+    // Create a DAG consisting of all known routes to the CID
+    // Start with the primary route
+    Node n_src;
+    Node n_ad(Node::XID_TYPE_AD, videoInformation.getServerLocation(0).getAd().c_str());
+    Node n_hid(Node::XID_TYPE_HID, videoInformation.getServerLocation(0).getHid().c_str());
+    Node n_cid(Node::XID_TYPE_CID, cid);
+    
+    // Add graph directly from source to cid
+    Graph g = n_src * n_cid;
+    
+    // Add graph from source to host to cid
+    Graph g2 = n_src * n_hid * n_cid;
+    g = g + g2;
+    
+    // Add graph from source to ad to host to cid
+    Graph g3 = n_src * n_ad * n_hid * n_cid;
+    g = g + g3;
+    
+    // In order to create our circuitous fallback graph (which consists of 
+    // adding links from each AD to its subsequent AD), we will need to keep 
+    // track of the preceding Ad
+    n_previousAd = n_ad;
+    n_previousHid = n_hid;
+    
+    // Add fall back paths
+    for(int i = 1; i < videoInformation.getNumServerLocations(); i++){
+        // Create fallback graph which goes from src to ad to hid to cid,
+        // and add it to graph
+        Node n_ad_backup(Node::XID_TYPE_AD, videoInformation.getServerLocation(i).getAd().c_str());
+        Node n_hid_backup(Node::XID_TYPE_HID, videoInformation.getServerLocation(i).getHid().c_str());
+        Graph fallbackGraph = n_src * n_ad_backup * n_hid_backup * n_cid;
+        g = g + fallbackGraph;
+        
+        // Create a fallback graph which goes through previous hid
+        // This is needed for the case of when the CID doesn't exist at the 
+        // host (the previous one)
+        Graph fallbackHostGraph = n_src * n_previousHid * n_ad_backup * n_hid_backup * n_cid;
+        g = g + fallbackHostGraph;
+                
+        // Create a fallback graph which goes through 
+        // the preceding AD
+        Graph circuitousFallbackGraph = n_src * n_previousAd * n_ad_backup * 
+                                        n_hid_backup * n_cid;
+        g = g + circuitousFallbackGraph;
+        
+        n_previousAd = n_ad_backup;
+        n_previousHid = n_hid_backup;
+    }
+    
+    return g.dag_string();
+}
+
 
 
 int ChunkFetcher::sendCmd(const char *cmd)

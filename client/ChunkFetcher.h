@@ -88,6 +88,16 @@ private:
 	*/
 	int readChunkData(std::vector<std::string> listOfChunkCIDs);
 	
+	
+	/**
+	 * Creates a Dag consisting of a route from src to cid, src to primary hid 
+	 * to cid, src to primary ad to primary hid to cid, and paths from src to 
+	 * each ad to the subsequent ad to cid, and paths from src to hid to the 
+	 * subsequent ad to cid.
+	*/
+	string createDag(const string & cid);
+	
+	
 	/**
 	 * Sends command string to the CID directory server that we are communicating
 	 * with.
