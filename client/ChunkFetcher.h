@@ -95,7 +95,7 @@ private:
 	 * each ad to the subsequent ad to cid, and paths from src to hid to the 
 	 * subsequent ad to cid.
 	*/
-	string createDag(const string & cid);
+	std::string createDag(const std::string & cid);
 	
 	
 	/**

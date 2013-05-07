@@ -1,6 +1,6 @@
 #!/bin/bash
-./CidDirectoryServer &
+./ContentServer1 &
 ./ContentServer2 &
-sleep 30
 ./ContentServer3 &
+./CidDirectoryServer &
 

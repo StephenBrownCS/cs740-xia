@@ -98,11 +98,19 @@ void ChunkFetcher::fetchChunkWindow(){
     vector<string> listOfChunkCIDs = retrieveCIDs();
     say("done!", LVL_DEBUG);
     
-    // If we got some CIDs, construct a protoDag and go fetch them
-    Graph protoDag = createProtoDag();
-    
+    // If we got some CIDs, go fetch them    
     if(!listOfChunkCIDs.empty()){
-        readChunkData(listOfChunkCIDs);
+        bool chunksSuccessfullyReceived = false;
+        while(!chunksSuccessfullyReceived){
+            if (readChunkData(listOfChunkCIDs) >= 0){
+                chunksSuccessfullyReceived = true;
+            }
+            else{
+                say("\n*****SWITCHING PRIMARY CID LOCATION*****");
+                videoInformation.rotateServerLocations();
+                say("New Primary CID Location:\n" + videoInformation.getServerLocation(0).toString());
+            }
+        }
     }
 }
 
@@ -134,16 +142,12 @@ vector<string> ChunkFetcher::retrieveCIDs(){
     receiveReply(reply, REPLY_MAX_SIZE);
     
     nextChunkToRequest += CHUNK_WINDOW_SIZE;
-    
-    char* cid_list = new char[REPLY_MAX_SIZE];
-    strncpy(cid_list, reply, REPLY_MAX_SIZE);
-    
+  
+    // Add the cids to the container of CID Strings  
     string entireReply(reply);
     stringstream ss(entireReply);
     string cid;
-    cout << "HERE WE GO" << endl;
     while(ss >> cid){
-        cout << "Pushing back " << cid.substr(4) << endl;
         cidList.push_back(cid.substr(4));
     }
 
@@ -163,13 +167,11 @@ int ChunkFetcher::readChunkData(vector<string> listOfChunkCIDs){
         
         // Create DAG for CID using the videoInformation AD and HIDs, including 
         // fallback paths
-        string dagStr = createDag(*it)
-        char* dag = (char *) malloc(dagStr.length() + 1);
-               
-        strcpy(dag, g.dag_string().c_str()); 
-
-        //cout << dag << endl;
+        string dagStr = createDag(*it);
         
+        // Store the dagStr into our chunkStatuses array
+        char* dag = (char *) malloc(dagStr.length() + 1);
+        strcpy(dag, dagStr.c_str()); 
         chunkStatuses[numChunks].cidLen = dagStr.length();
         chunkStatuses[numChunks].cid = dag;
         numChunks++;
@@ -203,11 +205,10 @@ int ChunkFetcher::readChunkData(vector<string> listOfChunkCIDs){
             waitingForChunkCounter++;
             
             if (waitingForChunkCounter > NUM_WAITING_MESSAGES_THRESHOLD){
-                say("\n*****SWITCHING PRIMARY CID LOCATION*****\n");
-                videoInformation.rotateServerLocations();
-                
-                // this may lead to infinite recursion, if no server location works
-                return readChunkData(listOfChunkCIDs);
+                // Since there is no explicit message indicating that 
+                // the chunks cannot be located, we interpret an arbitary 
+                // number of WAITING_FOR_CHUNK messages to mean that
+                return -2;
             }
             
         }
@@ -253,11 +254,12 @@ string ChunkFetcher::createDag(const string & cid){
     Node n_cid(Node::XID_TYPE_CID, cid);
     
     // Add graph directly from source to cid
-    Graph g = n_src * n_cid;
+    // The Chunk Request fails if we include this direct path
+    // Graph g = n_src * n_cid;
     
     // Add graph from source to host to cid
-    Graph g2 = n_src * n_hid * n_cid;
-    g = g + g2;
+    Graph g = n_src * n_hid * n_cid;
+    //g = g + g2;
     
     // Add graph from source to ad to host to cid
     Graph g3 = n_src * n_ad * n_hid * n_cid;
@@ -266,8 +268,8 @@ string ChunkFetcher::createDag(const string & cid){
     // In order to create our circuitous fallback graph (which consists of 
     // adding links from each AD to its subsequent AD), we will need to keep 
     // track of the preceding Ad
-    n_previousAd = n_ad;
-    n_previousHid = n_hid;
+    Node n_previousAd = n_ad;
+    Node n_previousHid = n_hid;
     
     // Add fall back paths
     for(int i = 1; i < videoInformation.getNumServerLocations(); i++){
@@ -292,6 +294,12 @@ string ChunkFetcher::createDag(const string & cid){
         
         n_previousAd = n_ad_backup;
         n_previousHid = n_hid_backup;
+    }
+    
+    static int debugCounter = 0;
+    if (debugCounter++ == 0){
+        say("\nSample DAG: ");
+        say(g.dag_string());
     }
     
     return g.dag_string();

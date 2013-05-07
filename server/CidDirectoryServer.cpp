@@ -35,9 +35,10 @@ map<string, vector<string>* > ContentServerXidList;
 vector<string> videoList;
 
 // Hard-coded list of locations where to find Big Buck Bunny content
+// the spaces after the AD strings are significant, do not remove them
 const string BIG_BUCK_BUNNY_CONTENT_SERVER_1 = 
-    "AD:1000000000000000000000000000000000000001 " 
-    "HID:0000000000000000000000000000000000000009";
+    "AD:1000000000000000000000000000000000000003 " 
+    "HID:0000000000000000000000000000000000000003";
 const string BIG_BUCK_BUNNY_CONTENT_SERVER_2 = 
     "AD:1000000000000000000000000000000000000002 " 
     "HID:0000000000000000000000000000000000000002";

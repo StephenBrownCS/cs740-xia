@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <sstream>
 #include "VideoInformation.h"
 #include "Utility.h"
 
@@ -17,6 +18,12 @@ ServerLocation::ServerLocation(string protoDag){
         int endPos = protoDag.find(" ", beginPos);
         hid = protoDag.substr(beginPos, endPos - beginPos);
     }
+}
+
+string ServerLocation::toString(){
+    stringstream ss;
+    ss << "AD:" << ad << " HID:" << hid;
+    return ss.str();
 }
 
 void VideoInformation::addServerLocation(ServerLocation serverLocation){

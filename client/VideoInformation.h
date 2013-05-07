@@ -19,14 +19,17 @@ public:
         return ad;
     }
 
-   
-   
     /**
      * Returns the Hid String without the HID: Prefix
     */ 
     std::string getHid(){
         return hid;
     }
+    
+    /**
+     *
+    */
+    std::string toString();
 };
 
 

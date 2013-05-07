@@ -112,7 +112,7 @@ VideoInformation receiveVideoInformation(int sock)
 	say("Content Server Locations:");
 	string ad, hid;
 	while (ss >> ad >> hid){
-		say("\tAD: " + ad + " " + "HID: " + hid);
+		say("\t" + ad + " " + hid);
 		ServerLocation location(ad + " " + hid);
 		videoInformation.addServerLocation(location);
 	} 
