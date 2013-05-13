@@ -106,7 +106,9 @@ void ChunkFetcher::fetchChunkWindow(){
                 chunksSuccessfullyReceived = true;
             }
             else{
-                say("\n*****SWITCHING PRIMARY CID LOCATION*****");
+                say("\n*****APPLICATION LEVEL FAILOVER KICKING IN*****");
+                // App-level failover is currently configured to just rotate 
+                // our DAG around
                 videoInformation.rotateServerLocations();
                 say("New Primary CID Location:\n" + videoInformation.getServerLocation(0).toString());
             }
